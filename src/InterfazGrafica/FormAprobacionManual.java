@@ -5,15 +5,13 @@ import modelos.Prestamo;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.List;
 
 public class FormAprobacionManual extends JFrame {
     private JPanel panelAprobacion;
     private JTable tablaSolicitudes;
-    private JButton btnAprobarSeleccionado;
     private JTextArea txtDetalles;
+    private JButton btnAprobarSeleccionado;
 
     private DefaultTableModel modelo;
 
@@ -27,24 +25,21 @@ public class FormAprobacionManual extends JFrame {
         configurarTabla();
         cargarSolicitudes();
 
-        btnAprobarSeleccionado.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                int fila = tablaSolicitudes.getSelectedRow();
-                if (fila == -1) {
-                    JOptionPane.showMessageDialog(FormAprobacionManual.this, "Selecciona una solicitud.");
-                    return;
-                }
+        btnAprobarSeleccionado.addActionListener(e -> {
+            int fila = tablaSolicitudes.getSelectedRow();
+            if (fila == -1) {
+                JOptionPane.showMessageDialog(this, "Selecciona una solicitud.");
+                return;
+            }
 
-                int idPrestamo = Integer.parseInt(modelo.getValueAt(fila, 0).toString());
-                Prestamo aprobado = GestorPrestamos.aprobarPrestamoPorId(idPrestamo);
-                if (aprobado != null) {
-                    JOptionPane.showMessageDialog(FormAprobacionManual.this, "Préstamo aprobado correctamente.");
-                    cargarSolicitudes();
-                    mostrarDetalles(aprobado);
-                } else {
-                    JOptionPane.showMessageDialog(FormAprobacionManual.this, "Error al aprobar préstamo.");
-                }
+            int idPrestamo = Integer.parseInt(modelo.getValueAt(fila, 0).toString());
+            Prestamo aprobado = GestorPrestamos.aprobarPrestamoPorId(idPrestamo);
+            if (aprobado != null) {
+                JOptionPane.showMessageDialog(this, "Préstamo aprobado correctamente.");
+                cargarSolicitudes();
+                mostrarDetalles(aprobado);
+            } else {
+                JOptionPane.showMessageDialog(this, "Error al aprobar préstamo.");
             }
         });
     }
@@ -52,7 +47,7 @@ public class FormAprobacionManual extends JFrame {
     private void configurarTabla() {
         modelo = new DefaultTableModel();
         modelo.setColumnIdentifiers(new String[]{
-                "ID", "Cliente ID", "Monto", "Destino", "Diferido", "Cuotas", "Interés", "Total", "Cuota"
+                "ID", "Cliente ID", "Monto", "Destino", "Diferido", "Cuotas", "Interés (%)", "Total", "Cuota"
         });
         tablaSolicitudes.setModel(modelo);
     }
@@ -72,9 +67,10 @@ public class FormAprobacionManual extends JFrame {
         }
     }
 
+
     private void mostrarDetalles(Prestamo p) {
         StringBuilder sb = new StringBuilder();
-        sb.append("Préstamo aprobado:\n");
+        sb.append("Resumen del préstamo:\n");
         sb.append("Cliente ID: ").append(p.getIdCliente()).append("\n");
         sb.append("Monto: $").append(p.getMonto()).append("\n");
         sb.append("Destino: ").append(p.getDestino()).append("\n");
@@ -82,9 +78,9 @@ public class FormAprobacionManual extends JFrame {
             sb.append("Cuotas: ").append(p.getNumeroCuotas()).append("\n");
             sb.append("Interés: ").append(p.getInteres() * 100).append("%\n");
             sb.append("Total a pagar: $").append(String.format("%.2f", p.calcularTotalConInteres())).append("\n");
-            sb.append("Valor por cuota: $").append(String.format("%.2f", p.calcularValorCuota())).append("\n");
+            sb.append("Cuota mensual: $").append(String.format("%.2f", p.calcularValorCuota())).append("\n");
         } else {
-            sb.append("Pago único (no diferido).\n");
+            sb.append("Pago único sin cuotas.\n");
         }
         txtDetalles.setText(sb.toString());
     }

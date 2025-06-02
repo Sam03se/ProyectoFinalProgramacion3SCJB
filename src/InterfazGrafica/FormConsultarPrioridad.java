@@ -13,27 +13,29 @@ public class FormConsultarPrioridad extends JFrame {
     public FormConsultarPrioridad() {
         setTitle("Préstamos Aprobados por Prioridad");
         setContentPane(panelPrioridad);
-        setSize(450, 300);
+        setSize(500, 400);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 
-        cargarPrestamosPrioritarios();
+        mostrarPrestamos();
     }
 
-    private void cargarPrestamosPrioritarios() {
-        List<Prestamo> lista = GestorPrestamos.obtenerPrestamosPrioridad();
-        StringBuilder sb = new StringBuilder("Préstamos aprobados (prioridad por monto):\n");
+    private void mostrarPrestamos() {
+        List<Prestamo> lista = GestorPrestamos.obtenerPrestamosAprobados();
+        StringBuilder sb = new StringBuilder();
 
         if (lista.isEmpty()) {
             sb.append("No hay préstamos aprobados.");
         } else {
             for (Prestamo p : lista) {
-                sb.append("Cliente ID: ").append(p.getIdCliente())
+                sb.append("ID Préstamo: ").append(p.getId())
+                        .append(" | Cliente ID: ").append(p.getIdCliente())
                         .append(" | $").append(p.getMonto())
-                        .append(" para ").append(p.getDestino()).append("\n");
+                        .append(" | Destino: ").append(p.getDestino()).append("\n");
             }
         }
 
+        txtPrestamosPrioridad.setEditable(false);
         txtPrestamosPrioridad.setText(sb.toString());
     }
 }
