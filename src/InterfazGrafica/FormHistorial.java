@@ -1,9 +1,9 @@
 package InterfazGrafica;
 
-import run.HistorialOperaciones;
+import gestores.GestorPrestamos;
 
 import javax.swing.*;
-import java.util.Stack;
+import java.util.List;
 
 public class FormHistorial extends JFrame {
     private JPanel panelHistorial;
@@ -12,19 +12,27 @@ public class FormHistorial extends JFrame {
     public FormHistorial() {
         setTitle("Historial de Operaciones");
         setContentPane(panelHistorial);
-        setSize(450, 300);
+        setSize(500, 400);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 
-        cargarHistorial();
+        mostrarHistorial();
     }
 
-    private void cargarHistorial() {
-        Stack<String> historial = HistorialOperaciones.obtenerHistorial();
-        StringBuilder sb = new StringBuilder("Historial de acciones:\n");
-        for (int i = historial.size() - 1; i >= 0; i--) {
-            sb.append(historial.get(i)).append("\n");
+    private void mostrarHistorial() {
+        List<String> historial = GestorPrestamos.obtenerHistorial();
+
+        if (historial.isEmpty()) {
+            txtHistorial.setText("No hay registros en el historial.");
+            return;
         }
+
+        StringBuilder sb = new StringBuilder("HISTORIAL DE OPERACIONES\n\n");
+        for (String evento : historial) {
+            sb.append("- ").append(evento).append("\n");
+        }
+
+        txtHistorial.setEditable(false);
         txtHistorial.setText(sb.toString());
     }
 }
