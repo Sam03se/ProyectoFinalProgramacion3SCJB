@@ -5,94 +5,79 @@ import modelos.Prestamo;
 import java.util.*;
 
 public class GestorPrestamos {
-    private static final Queue<Prestamo> solicitudesPendientes = new LinkedList<>();
-    private static final PriorityQueue<Prestamo> prestamosAprobados = new PriorityQueue<>();
-    private static final List<String> historialOperaciones = new ArrayList<>();
-    private static int contadorId = 1;
+    private Queue<Prestamo> colaSolicitudes = new LinkedList<>();
+    private PriorityQueue<Prestamo> colaPrioridad = new PriorityQueue<>();
+    private List<String> historialOperaciones = new ArrayList<>();
+    private List<Prestamo> prestamosAprobados = new ArrayList<>();
+    private int idPrestamoCounter = 1;
 
-    // ✅ Registra una solicitud de préstamo (pendiente)
-    public static void solicitarPrestamo(int idCliente, double monto, String destino, int cuotas) {
-        double interes = obtenerInteresPorMeses(cuotas);
+    // Tabla de intereses por meses
+    private final Map<Integer, Double> tablaIntereses = Map.ofEntries(
+            Map.entry(3, 0.03), Map.entry(6, 0.06), Map.entry(9, 0.09),
+            Map.entry(12, 0.12), Map.entry(18, 0.15), Map.entry(24, 0.18),
+            Map.entry(36, 0.21), Map.entry(48, 0.25), Map.entry(60, 0.30),
+            Map.entry(72, 0.35)
+    );
 
-        Prestamo nuevo = new Prestamo(generarNuevoId(), idCliente, monto, destino);
-        nuevo.setDiferido(cuotas > 1);
-        nuevo.setNumeroCuotas(cuotas);
-        nuevo.setInteres(interes);
-
-        solicitudesPendientes.offer(nuevo);
-
-        historialOperaciones.add("📌 Solicitud registrada: Cliente ID " + idCliente +
-                " | Monto: $" + monto +
-                " | Destino: " + destino +
-                " | Cuotas: " + cuotas +
-                " | Interés estimado: " + (interes * 100) + "%");
+    // Registrar solicitud de préstamo
+    public void solicitarPrestamo(int idCliente, double monto, String destino, int cuotas) {
+        Prestamo prestamo = new Prestamo(idPrestamoCounter++, idCliente, monto, destino, cuotas);
+        colaSolicitudes.add(prestamo);
+        historialOperaciones.add("📝 Solicitud registrada: Cliente " + idCliente + ", $" + monto + ", destino: " + destino + ", cuotas: " + cuotas);
     }
 
-    // ✅ Aprueba un préstamo por ID
-    public static Prestamo aprobarPrestamoPorId(int id) {
-        Prestamo aprobado = null;
-        List<Prestamo> temp = new ArrayList<>();
-
-        while (!solicitudesPendientes.isEmpty()) {
-            Prestamo p = solicitudesPendientes.poll();
+    // Aprobar préstamo por ID
+    public boolean aprobarPrestamoPorId(int id) {
+        Iterator<Prestamo> iterator = colaSolicitudes.iterator();
+        while (iterator.hasNext()) {
+            Prestamo p = iterator.next();
             if (p.getId() == id) {
-                aprobado = p;
-            } else {
-                temp.add(p);
+                iterator.remove();
+                colaPrioridad.add(p);
+                prestamosAprobados.add(p);
+                historialOperaciones.add("✅ Préstamo aprobado: ID " + p.getId() + " para Cliente " + p.getIdCliente());
+                return true;
             }
         }
-
-        solicitudesPendientes.addAll(temp);
-
-        if (aprobado != null) {
-            prestamosAprobados.offer(aprobado);
-            historialOperaciones.add("✅ Préstamo aprobado: Cliente ID " + aprobado.getIdCliente() +
-                    " | Monto: $" + aprobado.getMonto() +
-                    " | Cuotas: " + aprobado.getNumeroCuotas() +
-                    " | Interés: " + (aprobado.getInteres() * 100) + "%");
-        }
-
-        return aprobado;
+        return false;
     }
 
-    // ✅ Devuelve la lista de solicitudes pendientes
-    public static List<Prestamo> obtenerSolicitudesPendientes() {
-        return new ArrayList<>(solicitudesPendientes);
+    // Obtener préstamos pendientes (cola de solicitudes)
+    public List<Prestamo> obtenerPrestamosPendientes() {
+        return new ArrayList<>(colaSolicitudes);
     }
 
-    // ✅ Devuelve la lista de préstamos aprobados
-    public static List<Prestamo> obtenerPrestamosAprobados() {
-        return new ArrayList<>(prestamosAprobados);
+    // Alias para compatibilidad
+    public List<Prestamo> obtenerSolicitudesPendientes() {
+        return obtenerPrestamosPendientes();
     }
 
-    // ✅ Cálculo del interés según las cuotas
-    public static double obtenerInteresPorMeses(int meses) {
-        if (meses <= 3) return 0.03;
-        if (meses <= 6) return 0.06;
-        if (meses <= 12) return 0.09;
-        if (meses <= 24) return 0.12;
-        if (meses <= 36) return 0.18;
-        if (meses <= 48) return 0.25;
-        if (meses <= 60) return 0.30;
-        if (meses <= 72) return 0.36;
-        return 0.40;
+    // Obtener préstamos aprobados
+    public List<Prestamo> obtenerPrestamosAprobados() {
+        return prestamosAprobados;
     }
 
-    // ✅ Historial de eventos (solicitudes y aprobaciones)
-    public static List<String> obtenerHistorial() {
-        return new ArrayList<>(historialOperaciones);
+    // Obtener historial
+    public List<String> getHistorialOperaciones() {
+        return historialOperaciones;
     }
 
-    // ✅ Generador incremental de ID de préstamos
-    private static int generarNuevoId() {
-        return contadorId++;
+    // Obtener cola de prioridad
+    public PriorityQueue<Prestamo> obtenerColaPrioridad() {
+        return new PriorityQueue<>(colaPrioridad);
     }
 
-    // ✅ Reinicia todo el sistema (opcional)
-    public static void reiniciarSistema() {
-        solicitudesPendientes.clear();
-        prestamosAprobados.clear();
+    // Calcular interés por meses
+    public double obtenerInteresPorMeses(int meses) {
+        return tablaIntereses.getOrDefault(meses, 0.0);
+    }
+
+    // Reset de todos los datos (para pruebas o reinicio)
+    public void limpiarDatos() {
+        colaSolicitudes.clear();
+        colaPrioridad.clear();
         historialOperaciones.clear();
-        contadorId = 1;
+        prestamosAprobados.clear();
+        idPrestamoCounter = 1;
     }
 }

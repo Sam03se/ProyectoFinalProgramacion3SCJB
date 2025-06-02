@@ -4,38 +4,34 @@ import gestores.GestorPrestamos;
 import modelos.Prestamo;
 
 import javax.swing.*;
-import java.util.List;
+import java.util.PriorityQueue;
 
 public class FormConsultarPrioridad extends JFrame {
-    private JPanel panelPrioridad;
-    private JTextArea txtPrestamosPrioridad;
+    private JPanel panelPrincipal;
+    private JTextArea txtPrioridad;
+    private final GestorPrestamos gestorPrestamos;
 
-    public FormConsultarPrioridad() {
-        setTitle("Préstamos Aprobados por Prioridad");
-        setContentPane(panelPrioridad);
+    public FormConsultarPrioridad(GestorPrestamos gestorPrestamos) {
+        this.gestorPrestamos = gestorPrestamos;
+
+        setContentPane(panelPrincipal);
+        setTitle("Préstamos Prioritarios");
         setSize(500, 400);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+        setVisible(true);
 
-        mostrarPrestamos();
+        mostrarColaPrioridad();
     }
 
-    private void mostrarPrestamos() {
-        List<Prestamo> lista = GestorPrestamos.obtenerPrestamosAprobados();
-        StringBuilder sb = new StringBuilder();
-
-        if (lista.isEmpty()) {
-            sb.append("No hay préstamos aprobados.");
-        } else {
-            for (Prestamo p : lista) {
-                sb.append("ID Préstamo: ").append(p.getId())
-                        .append(" | Cliente ID: ").append(p.getIdCliente())
-                        .append(" | $").append(p.getMonto())
-                        .append(" | Destino: ").append(p.getDestino()).append("\n");
-            }
+    private void mostrarColaPrioridad() {
+        StringBuilder sb = new StringBuilder("🔝 Cola de Préstamos Prioritarios:\n");
+        PriorityQueue<Prestamo> cola = gestorPrestamos.obtenerColaPrioridad();
+        for (Prestamo p : cola) {
+            sb.append("Cliente ID: ").append(p.getIdCliente())
+                    .append(" | Monto: $").append(p.getMonto())
+                    .append(" | Destino: ").append(p.getDestino()).append("\n");
         }
-
-        txtPrestamosPrioridad.setEditable(false);
-        txtPrestamosPrioridad.setText(sb.toString());
+        txtPrioridad.setText(sb.toString());
     }
 }

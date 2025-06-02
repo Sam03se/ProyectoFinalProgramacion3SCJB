@@ -4,84 +4,75 @@ import gestores.GestorPrestamos;
 import modelos.Prestamo;
 
 import javax.swing.*;
-import javax.swing.table.DefaultTableModel;
-import java.util.List;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
-public class FormAprobacionManual extends JFrame {
-    private JPanel panelAprobacion;
-    private JTable tablaSolicitudes;
-    private JTextArea txtDetalles;
+public class FormAprobacionManual extends JPanel {
+    private JList<String> listaSolicitudes;
     private JButton btnAprobarSeleccionado;
+    private JTextArea txtResumenAprobacion;
+    private JPanel FormAprobacionManual;
+    private DefaultListModel<String> modeloLista;
+    private GestorPrestamos gestorPrestamos;
 
-    private DefaultTableModel modelo;
+    public FormAprobacionManual(GestorPrestamos gestorPrestamos) {
+        this.gestorPrestamos = gestorPrestamos;
+        setLayout(null);
 
-    public FormAprobacionManual() {
-        setTitle("Aprobar Préstamos Manualmente");
-        setContentPane(panelAprobacion);
-        setSize(700, 400);
-        setLocationRelativeTo(null);
-        setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+        JLabel lblTitulo = new JLabel("Solicitudes Pendientes");
+        lblTitulo.setBounds(20, 10, 200, 25);
+        add(lblTitulo);
 
-        configurarTabla();
+        modeloLista = new DefaultListModel<>();
+        listaSolicitudes = new JList<>(modeloLista);
+        JScrollPane scroll = new JScrollPane(listaSolicitudes);
+        scroll.setBounds(20, 40, 400, 150);
+        add(scroll);
+
+        btnAprobarSeleccionado = new JButton("Aprobar Seleccionado");
+        btnAprobarSeleccionado.setBounds(20, 200, 200, 30);
+        add(btnAprobarSeleccionado);
+
+        txtResumenAprobacion = new JTextArea();
+        txtResumenAprobacion.setEditable(false);
+        JScrollPane scrollResumen = new JScrollPane(txtResumenAprobacion);
+        scrollResumen.setBounds(20, 240, 400, 120);
+        add(scrollResumen);
+
         cargarSolicitudes();
 
-        btnAprobarSeleccionado.addActionListener(e -> {
-            int fila = tablaSolicitudes.getSelectedRow();
-            if (fila == -1) {
-                JOptionPane.showMessageDialog(this, "Selecciona una solicitud.");
-                return;
-            }
-
-            int idPrestamo = Integer.parseInt(modelo.getValueAt(fila, 0).toString());
-            Prestamo aprobado = GestorPrestamos.aprobarPrestamoPorId(idPrestamo);
-            if (aprobado != null) {
-                JOptionPane.showMessageDialog(this, "Préstamo aprobado correctamente.");
-                cargarSolicitudes();
-                mostrarDetalles(aprobado);
-            } else {
-                JOptionPane.showMessageDialog(this, "Error al aprobar préstamo.");
+        btnAprobarSeleccionado.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int index = listaSolicitudes.getSelectedIndex();
+                if (index >= 0) {
+                    String selectedValue = modeloLista.getElementAt(index);
+                    int id = extraerIdDesdeTexto(selectedValue);
+                    if (gestorPrestamos.aprobarPrestamoPorId(id)) {
+                        txtResumenAprobacion.setText("✅ Préstamo aprobado correctamente.\n" + selectedValue);
+                        cargarSolicitudes();
+                    } else {
+                        txtResumenAprobacion.setText("❌ No se pudo aprobar el préstamo.");
+                    }
+                } else {
+                    txtResumenAprobacion.setText("⚠️ Selecciona una solicitud para aprobar.");
+                }
             }
         });
-    }
-
-    private void configurarTabla() {
-        modelo = new DefaultTableModel();
-        modelo.setColumnIdentifiers(new String[]{
-                "ID", "Cliente ID", "Monto", "Destino", "Diferido", "Cuotas", "Interés (%)", "Total", "Cuota"
-        });
-        tablaSolicitudes.setModel(modelo);
     }
 
     private void cargarSolicitudes() {
-        modelo.setRowCount(0);
-        List<Prestamo> solicitudes = GestorPrestamos.obtenerSolicitudesPendientes();
-
-        for (Prestamo p : solicitudes) {
-            double total = p.calcularTotalConInteres();
-            double cuota = p.calcularValorCuota();
-            modelo.addRow(new Object[]{
-                    p.getId(), p.getIdCliente(), p.getMonto(), p.getDestino(),
-                    p.esDiferido(), p.getNumeroCuotas(), p.getInteres() * 100,
-                    String.format("%.2f", total), String.format("%.2f", cuota)
-            });
+        modeloLista.clear();
+        for (Prestamo p : gestorPrestamos.obtenerPrestamosPendientes()) {
+            modeloLista.addElement("ID: " + p.getId() + " | Cliente: " + p.getIdCliente() + " | $" + p.getMonto() + " | Cuotas: " + p.getCuotas());
         }
     }
 
-
-    private void mostrarDetalles(Prestamo p) {
-        StringBuilder sb = new StringBuilder();
-        sb.append("Resumen del préstamo:\n");
-        sb.append("Cliente ID: ").append(p.getIdCliente()).append("\n");
-        sb.append("Monto: $").append(p.getMonto()).append("\n");
-        sb.append("Destino: ").append(p.getDestino()).append("\n");
-        if (p.esDiferido()) {
-            sb.append("Cuotas: ").append(p.getNumeroCuotas()).append("\n");
-            sb.append("Interés: ").append(p.getInteres() * 100).append("%\n");
-            sb.append("Total a pagar: $").append(String.format("%.2f", p.calcularTotalConInteres())).append("\n");
-            sb.append("Cuota mensual: $").append(String.format("%.2f", p.calcularValorCuota())).append("\n");
-        } else {
-            sb.append("Pago único sin cuotas.\n");
+    private int extraerIdDesdeTexto(String texto) {
+        try {
+            return Integer.parseInt(texto.split("\\|")[0].replace("ID:", "").trim());
+        } catch (Exception e) {
+            return -1;
         }
-        txtDetalles.setText(sb.toString());
     }
 }

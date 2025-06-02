@@ -3,36 +3,30 @@ package InterfazGrafica;
 import gestores.GestorPrestamos;
 
 import javax.swing.*;
-import java.util.List;
 
 public class FormHistorial extends JFrame {
-    private JPanel panelHistorial;
+    private JPanel panelPrincipal;
     private JTextArea txtHistorial;
+    private final GestorPrestamos gestorPrestamos;
 
-    public FormHistorial() {
+    public FormHistorial(GestorPrestamos gestorPrestamos) {
+        this.gestorPrestamos = gestorPrestamos;
+
+        setContentPane(panelPrincipal);
         setTitle("Historial de Operaciones");
-        setContentPane(panelHistorial);
         setSize(500, 400);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+        setVisible(true);
 
         mostrarHistorial();
     }
 
     private void mostrarHistorial() {
-        List<String> historial = GestorPrestamos.obtenerHistorial();
-
-        if (historial.isEmpty()) {
-            txtHistorial.setText("No hay registros en el historial.");
-            return;
+        StringBuilder sb = new StringBuilder("📜 Historial:\n");
+        for (String linea : gestorPrestamos.getHistorialOperaciones()) {
+            sb.append("• ").append(linea).append("\n");
         }
-
-        StringBuilder sb = new StringBuilder("HISTORIAL DE OPERACIONES\n\n");
-        for (String evento : historial) {
-            sb.append("- ").append(evento).append("\n");
-        }
-
-        txtHistorial.setEditable(false);
         txtHistorial.setText(sb.toString());
     }
 }

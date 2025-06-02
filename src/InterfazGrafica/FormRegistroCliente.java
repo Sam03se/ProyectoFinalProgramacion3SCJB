@@ -8,41 +8,53 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 public class FormRegistroCliente extends JFrame {
-    private JPanel panelRegistro;
+    private JPanel panelPrincipal;
+    private JTextField txtId;
     private JTextField txtNombre;
-    private JButton btnRegistrar;
-    private JTextArea txtListaClientes;
+    private JButton btnRegistrarCliente;
+    private JLabel IDLabel;
+    private JLabel lblNombre;
+    private JButton btnCancelar;
 
-    public FormRegistroCliente() {
+    private final GestorClientes gestorClientes;
+
+    public FormRegistroCliente(GestorClientes gestorClientes) {
+        this.gestorClientes = gestorClientes;
+        setContentPane(panelPrincipal);
         setTitle("Registrar Cliente");
-        setContentPane(panelRegistro);
-        setSize(400, 300);
+        setSize(400, 250);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+        inicializarEventos();
+    }
 
-        btnRegistrar.addActionListener(new ActionListener() {
+    private void inicializarEventos() {
+        btnRegistrarCliente.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                String nombre = txtNombre.getText().trim();
-                if (!nombre.isEmpty()) {
-                    Cliente nuevo = GestorClientes.crearCliente(nombre);
-                    JOptionPane.showMessageDialog(FormRegistroCliente.this, "Cliente registrado con ID: " + nuevo.getId());
-                    actualizarLista();
-                    txtNombre.setText("");
-                } else {
-                    JOptionPane.showMessageDialog(FormRegistroCliente.this, "Ingrese un nombre válido.");
+                try {
+                    int id = Integer.parseInt(txtId.getText().trim());
+                    String nombre = txtNombre.getText().trim();
+
+                    if (nombre.isEmpty()) {
+                        JOptionPane.showMessageDialog(null, "⚠️ El nombre no puede estar vacío.");
+                        return;
+                    }
+
+                    Cliente nuevo = new Cliente(id, nombre);
+                    gestorClientes.agregarCliente(nuevo);
+
+                    JOptionPane.showMessageDialog(null, "✅ Cliente registrado correctamente.");
+                    dispose();
+
+                } catch (NumberFormatException ex) {
+                    JOptionPane.showMessageDialog(null, "⚠️ El ID debe ser un número entero.");
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(null, "❌ Error al registrar: " + ex.getMessage());
                 }
             }
         });
 
-        actualizarLista();
-    }
-
-    private void actualizarLista() {
-        StringBuilder sb = new StringBuilder("Clientes registrados:\n");
-        for (Cliente c : GestorClientes.obtenerClientes()) {
-            sb.append("ID ").append(c.getId()).append(" - ").append(c.getNombre()).append("\n");
-        }
-        txtListaClientes.setText(sb.toString());
+        btnCancelar.addActionListener(e -> dispose());
     }
 }
