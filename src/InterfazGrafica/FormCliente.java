@@ -10,6 +10,13 @@ public class FormCliente extends JFrame {
     private JPanel panelPrincipal;
     private JTextField txtId;
     private JTextField txtNombre;
+    private JTextField txtApellido;
+    private JTextField txtCedula;
+    private JTextField txtCorreo;
+    private JTextField txtEdad;
+    private JComboBox<String> comboZona;
+    private JTextField txtIngreso;
+    private JTextField txtAntiguedad;
     private JTextArea txtListaClientes;
     private JButton btnAgregar;
     private JButton btnEditar;
@@ -24,10 +31,13 @@ public class FormCliente extends JFrame {
 
         setTitle("Gestión de Clientes");
         setContentPane(panelPrincipal);
-        setSize(600, 400);
+        setSize(600, 600);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         setVisible(true);
+
+        comboZona.addItem("urbana");
+        comboZona.addItem("rural");
 
         configurarAcciones();
     }
@@ -37,14 +47,21 @@ public class FormCliente extends JFrame {
             try {
                 int id = Integer.parseInt(txtId.getText());
                 String nombre = txtNombre.getText().trim();
-                if (nombre.isEmpty()) {
-                    mostrar("⚠️ Nombre vacío.");
-                    return;
+                String apellido = txtApellido.getText().trim();
+                String cedula = txtCedula.getText().trim();
+                String correo = txtCorreo.getText().trim();
+                int edad = Integer.parseInt(txtEdad.getText().trim());
+                String zona = comboZona.getSelectedItem().toString();
+                double ingreso = Double.parseDouble(txtIngreso.getText().trim());
+                int antiguedad = Integer.parseInt(txtAntiguedad.getText().trim());
+
+                Cliente c = new Cliente(id, nombre, apellido, cedula, correo, edad, zona, ingreso, antiguedad);
+                if (gestorClientes.agregarCliente(c)) {
+                    mostrar("✅ Cliente agregado.");
+                    limpiarCampos();
+                } else {
+                    mostrar("⚠️ Cliente ya existente.");
                 }
-                Cliente c = new Cliente(id, nombre);
-                gestorClientes.agregarCliente(c);
-                mostrar("✅ Cliente agregado.");
-                limpiarCampos();
             } catch (Exception ex) {
                 mostrar("❌ Error al agregar: " + ex.getMessage());
             }
@@ -53,7 +70,9 @@ public class FormCliente extends JFrame {
         btnListar.addActionListener(e -> {
             StringBuilder sb = new StringBuilder("📋 Lista de Clientes:\n");
             for (Cliente c : gestorClientes.listarClientes()) {
-                sb.append("ID: ").append(c.getId()).append(" | Nombre: ").append(c.getNombre()).append("\n");
+                sb.append("ID: ").append(c.getId())
+                        .append(" | ").append(c.getNombre()).append(" ").append(c.getApellido())
+                        .append(" | Correo: ").append(c.getCorreo()).append("\n");
             }
             txtListaClientes.setText(sb.toString());
         });
@@ -61,8 +80,11 @@ public class FormCliente extends JFrame {
         btnEditar.addActionListener(e -> {
             try {
                 int id = Integer.parseInt(txtId.getText());
-                String nuevoNombre = txtNombre.getText().trim();
-                if (gestorClientes.editarCliente(id, nuevoNombre)) {
+                String nombre = txtNombre.getText().trim();
+                String apellido = txtApellido.getText().trim();
+                String correo = txtCorreo.getText().trim();
+
+                if (gestorClientes.editarCliente(id, nombre, apellido, correo)) {
                     mostrar("✅ Cliente editado.");
                 } else {
                     mostrar("⚠️ Cliente no encontrado.");
@@ -93,6 +115,13 @@ public class FormCliente extends JFrame {
     private void limpiarCampos() {
         txtId.setText("");
         txtNombre.setText("");
+        txtApellido.setText("");
+        txtCedula.setText("");
+        txtCorreo.setText("");
+        txtEdad.setText("");
+        txtIngreso.setText("");
+        txtAntiguedad.setText("");
+        comboZona.setSelectedIndex(0);
     }
 
     private void mostrar(String mensaje) {
@@ -100,6 +129,6 @@ public class FormCliente extends JFrame {
     }
 
     private void createUIComponents() {
-        // TODO: place custom component creation code here
+        // se define en el .form
     }
 }
