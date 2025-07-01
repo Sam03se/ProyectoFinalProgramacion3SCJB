@@ -2,6 +2,8 @@ package gestores;
 
 import modelos.Cliente;
 import modelos.Prestamo;
+import ArbolIA.ArbolEvaluador;
+import run.ComprobantePrestamo;
 
 import java.util.*;
 
@@ -19,17 +21,17 @@ public class GestorPrestamos {
             Map.entry(72, 0.35)
     );
 
-    // Evaluación simple del cliente para demo IA
-    public boolean clienteEsElegible(Cliente cliente) {
-        return cliente.getEdad() >= 21 &&
-                cliente.getIngresoMensual() >= 350 &&
-                cliente.getAntiguedadLaboral() >= 1;
-    }
+    private final ArbolEvaluador evaluador = new ArbolEvaluador();
 
-    // Registrar solicitud
+    // Registrar solicitud de préstamo con IA y comprobante
     public boolean solicitarPrestamo(Cliente cliente, double monto, String destino, int cuotas) {
-        if (!clienteEsElegible(cliente)) {
-            historialOperaciones.add("❌ Rechazado: Cliente " + cliente.getId() + " no cumple condiciones.");
+        StringBuilder trazabilidad = new StringBuilder();
+        String resultadoIA = evaluador.evaluarCliente(cliente, trazabilidad);
+
+        historialOperaciones.add("📊 Evaluación IA cliente " + cliente.getId() + ":\n" + trazabilidad);
+
+        if (!resultadoIA.equalsIgnoreCase("Aprobado")) {
+            historialOperaciones.add("❌ Rechazado por IA: Cliente " + cliente.getId());
             return false;
         }
 
@@ -38,10 +40,14 @@ public class GestorPrestamos {
 
         colaSolicitudes.add(prestamo);
         historialOperaciones.add("📝 Solicitud registrada: " + prestamo);
+
+        // ✅ Generar comprobante en archivo .txt
+        ComprobantePrestamo.guardarComoTxt(prestamo);
+
         return true;
     }
 
-    // Aprobar por ID
+    // Aprobar préstamo por ID
     public boolean aprobarPrestamoPorId(int id) {
         Iterator<Prestamo> iterator = colaSolicitudes.iterator();
         while (iterator.hasNext()) {
@@ -50,7 +56,7 @@ public class GestorPrestamos {
                 iterator.remove();
                 colaPrioridad.add(p);
                 prestamosAprobados.add(p);
-                historialOperaciones.add("✅ Aprobado: " + p);
+                historialOperaciones.add("✅ Aprobado manualmente: " + p);
                 return true;
             }
         }
@@ -74,7 +80,7 @@ public class GestorPrestamos {
     }
 
     public double obtenerInteresPorMeses(int meses) {
-        return tablaIntereses.getOrDefault(meses, 0.15);
+        return tablaIntereses.getOrDefault(meses, 0.15); // default: 15%
     }
 
     public void limpiarDatos() {

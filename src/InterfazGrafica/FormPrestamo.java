@@ -7,6 +7,7 @@ import modelos.Prestamo;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
+import java.util.List;
 
 public class FormPrestamo extends JFrame {
     private JPanel panelPrincipal;
@@ -18,7 +19,6 @@ public class FormPrestamo extends JFrame {
     private JComboBox<Integer> comboCuotas;
     private JTextArea txtResumenCalculo;
     private JButton btnCancelar;
-    private JComboBox comboBox1;
 
     private final GestorClientes gestorClientes;
     private final GestorPrestamos gestorPrestamos;
@@ -48,13 +48,15 @@ public class FormPrestamo extends JFrame {
         for (int cuotas : opcionesCuotas) {
             comboCuotas.addItem(cuotas);
         }
+
+        txtResumenCalculo.setEditable(false);
     }
 
     private void configurarAcciones() {
         btnSolicitar.addActionListener((ActionEvent e) -> {
             Cliente cliente = (Cliente) comboClientes.getSelectedItem();
             if (cliente == null) {
-                txtResumenCalculo.setText("️ Selecciona un cliente.");
+                txtResumenCalculo.setText("⚠️ Selecciona un cliente.");
                 return;
             }
 
@@ -64,26 +66,32 @@ public class FormPrestamo extends JFrame {
                 int cuotas = (int) comboCuotas.getSelectedItem();
                 boolean diferido = chkDiferido.isSelected();
 
-                double interes = gestorPrestamos.obtenerInteresPorMeses(cuotas);
-
                 boolean exito = gestorPrestamos.solicitarPrestamo(cliente, monto, destino, cuotas);
+
+                List<String> historial = gestorPrestamos.getHistorialOperaciones();
+                String trazabilidad = historial.get(historial.size() - 2); // evaluación IA
+                String resultado = historial.get(historial.size() - 1);    // aprobado o rechazado
+
+                txtResumenCalculo.setText(trazabilidad + "\n" + resultado);
+
                 if (!exito) {
-                    txtResumenCalculo.setText(" Cliente no califica para el préstamo.");
                     return;
                 }
 
-                // Obtener último préstamo aprobado (opcional: podrías buscarlo por ID también)
+                // Mostrar detalles del préstamo si fue exitoso
                 Prestamo ultimo = gestorPrestamos.obtenerSolicitudesPendientes().getLast();
+                double total = ultimo.calcularTotalConInteres();
+                double cuota = ultimo.calcularValorCuotaAvanzada();
 
-                txtResumenCalculo.setText("✅ Solicitud registrada\n" +
-                        "Cliente: " + cliente.getNombre() + " " + cliente.getApellido() + "\n" +
-                        "Monto: $" + monto + "\n" +
-                        "Cuotas: " + cuotas + " meses\n" +
-                        "Interés aplicado: " + (interes * 100) + "%\n" +
-                        "Total a pagar: $" + String.format("%.2f", ultimo.calcularTotalConInteres()) + "\n" +
-                        "Cuota mensual: $" + String.format("%.2f", ultimo.calcularValorCuotaAvanzada()) +
-                        (diferido ? " (diferido)" : "")
-                );
+                txtResumenCalculo.append("\n--------------------------------------\n");
+                txtResumenCalculo.append("Cliente: " + cliente.getNombre() + " " + cliente.getApellido() + "\n");
+                txtResumenCalculo.append("Monto: $" + String.format("%.2f", monto) + "\n");
+                txtResumenCalculo.append("Cuotas: " + cuotas + "\n");
+                txtResumenCalculo.append("Interés aplicado: " + (ultimo.getInteres() * 100) + "%\n");
+                txtResumenCalculo.append("Total a pagar: $" + String.format("%.2f", total) + "\n");
+                txtResumenCalculo.append("Cuota mensual: $" + String.format("%.2f", cuota));
+                if (diferido) txtResumenCalculo.append(" (diferido)");
+
             } catch (NumberFormatException ex) {
                 txtResumenCalculo.setText("⚠️ Ingrese un monto válido.");
             }
