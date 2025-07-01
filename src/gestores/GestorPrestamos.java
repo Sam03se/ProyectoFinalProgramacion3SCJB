@@ -1,5 +1,6 @@
 package gestores;
 
+import modelos.Cliente;
 import modelos.Prestamo;
 
 import java.util.*;
@@ -11,7 +12,6 @@ public class GestorPrestamos {
     private List<Prestamo> prestamosAprobados = new ArrayList<>();
     private int idPrestamoCounter = 1;
 
-    // Tabla de intereses por meses
     private final Map<Integer, Double> tablaIntereses = Map.ofEntries(
             Map.entry(3, 0.03), Map.entry(6, 0.06), Map.entry(9, 0.09),
             Map.entry(12, 0.12), Map.entry(18, 0.15), Map.entry(24, 0.18),
@@ -19,14 +19,29 @@ public class GestorPrestamos {
             Map.entry(72, 0.35)
     );
 
-    // Registrar solicitud de préstamo
-    public void solicitarPrestamo(int idCliente, double monto, String destino, int cuotas) {
-        Prestamo prestamo = new Prestamo(idPrestamoCounter++, idCliente, monto, destino, cuotas);
-        colaSolicitudes.add(prestamo);
-        historialOperaciones.add("📝 Solicitud registrada: Cliente " + idCliente + ", $" + monto + ", destino: " + destino + ", cuotas: " + cuotas);
+    // Evaluación simple del cliente para demo IA
+    public boolean clienteEsElegible(Cliente cliente) {
+        return cliente.getEdad() >= 21 &&
+                cliente.getIngresoMensual() >= 350 &&
+                cliente.getAntiguedadLaboral() >= 1;
     }
 
-    // Aprobar préstamo por ID
+    // Registrar solicitud
+    public boolean solicitarPrestamo(Cliente cliente, double monto, String destino, int cuotas) {
+        if (!clienteEsElegible(cliente)) {
+            historialOperaciones.add("❌ Rechazado: Cliente " + cliente.getId() + " no cumple condiciones.");
+            return false;
+        }
+
+        double interes = obtenerInteresPorMeses(cuotas);
+        Prestamo prestamo = new Prestamo(idPrestamoCounter++, cliente, monto, destino, cuotas, false, interes);
+
+        colaSolicitudes.add(prestamo);
+        historialOperaciones.add("📝 Solicitud registrada: " + prestamo);
+        return true;
+    }
+
+    // Aprobar por ID
     public boolean aprobarPrestamoPorId(int id) {
         Iterator<Prestamo> iterator = colaSolicitudes.iterator();
         while (iterator.hasNext()) {
@@ -35,44 +50,33 @@ public class GestorPrestamos {
                 iterator.remove();
                 colaPrioridad.add(p);
                 prestamosAprobados.add(p);
-                historialOperaciones.add("✅ Préstamo aprobado: ID " + p.getId() + " para Cliente " + p.getIdCliente());
+                historialOperaciones.add("✅ Aprobado: " + p);
                 return true;
             }
         }
         return false;
     }
 
-    // Obtener préstamos pendientes (cola de solicitudes)
-    public List<Prestamo> obtenerPrestamosPendientes() {
+    public List<Prestamo> obtenerSolicitudesPendientes() {
         return new ArrayList<>(colaSolicitudes);
     }
 
-    // Alias para compatibilidad
-    public List<Prestamo> obtenerSolicitudesPendientes() {
-        return obtenerPrestamosPendientes();
-    }
-
-    // Obtener préstamos aprobados
     public List<Prestamo> obtenerPrestamosAprobados() {
-        return prestamosAprobados;
+        return new ArrayList<>(prestamosAprobados);
     }
 
-    // Obtener historial
     public List<String> getHistorialOperaciones() {
-        return historialOperaciones;
+        return new ArrayList<>(historialOperaciones);
     }
 
-    // Obtener cola de prioridad
     public PriorityQueue<Prestamo> obtenerColaPrioridad() {
         return new PriorityQueue<>(colaPrioridad);
     }
 
-    // Calcular interés por meses
     public double obtenerInteresPorMeses(int meses) {
-        return tablaIntereses.getOrDefault(meses, 0.0);
+        return tablaIntereses.getOrDefault(meses, 0.15);
     }
 
-    // Reset de todos los datos (para pruebas o reinicio)
     public void limpiarDatos() {
         colaSolicitudes.clear();
         colaPrioridad.clear();

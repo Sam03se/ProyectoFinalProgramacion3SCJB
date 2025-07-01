@@ -2,16 +2,20 @@ package modelos;
 
 public class Prestamo implements Comparable<Prestamo> {
     private int id;
-    private int idCliente;
+    private Cliente cliente;
     private double monto;
     private String destino;
     private int cuotas;
     private boolean diferido;
-    private double interes; // % expresado como decimal (ej: 0.12 = 12%)
+    private double interes;
 
-    public Prestamo(int id, int idCliente, double monto, String destino, int cuotas) {
+    public Prestamo(int id, Cliente cliente, double monto, String destino, int cuotas) {
+        if (monto <= 0 || cuotas <= 0 || cliente == null || destino.isEmpty()) {
+            throw new IllegalArgumentException("Datos del préstamo inválidos.");
+        }
+
         this.id = id;
-        this.idCliente = idCliente;
+        this.cliente = cliente;
         this.monto = monto;
         this.destino = destino;
         this.cuotas = cuotas;
@@ -19,24 +23,18 @@ public class Prestamo implements Comparable<Prestamo> {
         this.interes = 0.0;
     }
 
-    // Constructor con opción de diferido e interés
-    public Prestamo(int id, int idCliente, double monto, String destino, int cuotas, boolean diferido, double interes) {
-        this.id = id;
-        this.idCliente = idCliente;
-        this.monto = monto;
-        this.destino = destino;
-        this.cuotas = cuotas;
+    public Prestamo(int id, Cliente cliente, double monto, String destino, int cuotas, boolean diferido, double interes) {
+        this(id, cliente, monto, destino, cuotas);
         this.diferido = diferido;
         this.interes = interes;
     }
 
-    // Getters
     public int getId() {
         return id;
     }
 
-    public int getIdCliente() {
-        return idCliente;
+    public Cliente getCliente() {
+        return cliente;
     }
 
     public double getMonto() {
@@ -59,17 +57,18 @@ public class Prestamo implements Comparable<Prestamo> {
         return interes;
     }
 
-    public int getNumeroCuotas() {
-        return cuotas;
+    public void setInteres(double interes) {
+        this.interes = interes;
     }
 
-    // Cálculo de valores
+    // Fórmula financiera real
+    public double calcularValorCuotaAvanzada() {
+        double tasaMensual = interes / cuotas;
+        return (monto * tasaMensual * Math.pow(1 + tasaMensual, cuotas)) / (Math.pow(1 + tasaMensual, cuotas) - 1);
+    }
+
     public double calcularTotalConInteres() {
-        return monto + (monto * interes);
-    }
-
-    public double calcularValorCuota() {
-        return calcularTotalConInteres() / cuotas;
+        return calcularValorCuotaAvanzada() * cuotas;
     }
 
     @Override
@@ -79,6 +78,8 @@ public class Prestamo implements Comparable<Prestamo> {
 
     @Override
     public String toString() {
-        return "Préstamo ID: " + id + " | Cliente: " + idCliente + " | $" + monto;
+        return "Préstamo ID: " + id +
+                " | Cliente: " + cliente.getId() + " - " + cliente.getNombre() +
+                " | $" + monto + " | Cuotas: " + cuotas;
     }
 }
