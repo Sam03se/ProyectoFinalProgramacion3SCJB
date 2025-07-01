@@ -1,3 +1,4 @@
+
 package modelos;
 
 public class Cliente {
@@ -7,11 +8,10 @@ public class Cliente {
     private String correo;
     private String cedula;
     private int edad;
-    private String zona; // urbana o rural
+    private String zona;
     private double ingresoMensual;
-    private int antiguedadLaboral; // en años
+    private int antiguedadLaboral;
 
-    // Constructor completo
     public Cliente(int id, String nombre, String apellido, String cedula, String correo, int edad, String zona, double ingresoMensual, int antiguedadLaboral) {
         if (id <= 0) throw new IllegalArgumentException("ID debe ser positivo.");
         if (nombre == null || nombre.isEmpty()) throw new IllegalArgumentException("Nombre no puede estar vacío.");
@@ -34,7 +34,6 @@ public class Cliente {
         this.antiguedadLaboral = antiguedadLaboral;
     }
 
-    // Getters
     public int getId() { return id; }
     public String getNombre() { return nombre; }
     public String getApellido() { return apellido; }
@@ -45,7 +44,6 @@ public class Cliente {
     public double getIngresoMensual() { return ingresoMensual; }
     public int getAntiguedadLaboral() { return antiguedadLaboral; }
 
-    // Setters con validación
     public void setNombre(String nombre) {
         if (nombre == null || nombre.isEmpty()) throw new IllegalArgumentException("Nombre inválido.");
         this.nombre = nombre;

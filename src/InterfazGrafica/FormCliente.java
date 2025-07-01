@@ -1,3 +1,4 @@
+
 package InterfazGrafica;
 
 import gestores.GestorClientes;
@@ -45,7 +46,7 @@ public class FormCliente extends JFrame {
     private void configurarAcciones() {
         btnAgregar.addActionListener((ActionEvent e) -> {
             try {
-                int id = Integer.parseInt(txtId.getText());
+                int id = Integer.parseInt(txtId.getText().trim());
                 String nombre = txtNombre.getText().trim();
                 String apellido = txtApellido.getText().trim();
                 String cedula = txtCedula.getText().trim();
@@ -57,55 +58,55 @@ public class FormCliente extends JFrame {
 
                 Cliente c = new Cliente(id, nombre, apellido, cedula, correo, edad, zona, ingreso, antiguedad);
                 if (gestorClientes.agregarCliente(c)) {
-                    mostrar("✅ Cliente agregado.");
+                    mostrar("✅ Cliente agregado correctamente.");
                     limpiarCampos();
                 } else {
-                    mostrar("⚠️ Cliente ya existente.");
+                    mostrar("⚠️ Ya existe un cliente con ese ID.");
                 }
             } catch (Exception ex) {
-                mostrar("❌ Error al agregar: " + ex.getMessage());
+                mostrar("❌ Error al agregar cliente: " + ex.getMessage());
             }
         });
 
         btnListar.addActionListener(e -> {
-            StringBuilder sb = new StringBuilder("📋 Lista de Clientes:\n");
+            StringBuilder sb = new StringBuilder("📋 Lista de Clientes: ");
             for (Cliente c : gestorClientes.listarClientes()) {
                 sb.append("ID: ").append(c.getId())
                         .append(" | ").append(c.getNombre()).append(" ").append(c.getApellido())
-                        .append(" | Correo: ").append(c.getCorreo()).append("\n");
+                        .append(" | Correo: ").append(c.getCorreo()).append(" ");
             }
             txtListaClientes.setText(sb.toString());
         });
 
         btnEditar.addActionListener(e -> {
             try {
-                int id = Integer.parseInt(txtId.getText());
+                int id = Integer.parseInt(txtId.getText().trim());
                 String nombre = txtNombre.getText().trim();
                 String apellido = txtApellido.getText().trim();
                 String correo = txtCorreo.getText().trim();
 
                 if (gestorClientes.editarCliente(id, nombre, apellido, correo)) {
-                    mostrar("✅ Cliente editado.");
+                    mostrar("✅ Cliente editado correctamente.");
                 } else {
                     mostrar("⚠️ Cliente no encontrado.");
                 }
                 limpiarCampos();
             } catch (Exception ex) {
-                mostrar("❌ Error al editar.");
+                mostrar("❌ Error al editar cliente: " + ex.getMessage());
             }
         });
 
         btnEliminar.addActionListener(e -> {
             try {
-                int id = Integer.parseInt(txtId.getText());
+                int id = Integer.parseInt(txtId.getText().trim());
                 if (gestorClientes.eliminarCliente(id)) {
-                    mostrar("✅ Cliente eliminado.");
+                    mostrar("✅ Cliente eliminado correctamente.");
                 } else {
                     mostrar("⚠️ Cliente no encontrado.");
                 }
                 limpiarCampos();
             } catch (Exception ex) {
-                mostrar("❌ Error al eliminar.");
+                mostrar("❌ Error al eliminar cliente: " + ex.getMessage());
             }
         });
 
@@ -129,6 +130,6 @@ public class FormCliente extends JFrame {
     }
 
     private void createUIComponents() {
-        // se define en el .form
+        // Se configura automáticamente en el archivo .form
     }
 }

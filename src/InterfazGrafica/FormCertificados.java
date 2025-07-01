@@ -3,6 +3,7 @@ package InterfazGrafica;
 import gestores.GestorClientes;
 import gestores.GestorPrestamos;
 import modelos.Prestamo;
+import modelos.Cliente;
 
 import javax.swing.*;
 import java.util.List;
@@ -23,20 +24,31 @@ public class FormCertificados extends JFrame {
         setSize(500, 400);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
-        setVisible(true);
 
         mostrarCertificados();
+        setVisible(true);
     }
 
     private void mostrarCertificados() {
-        StringBuilder sb = new StringBuilder("📄 Certificados de préstamos:\n");
+        StringBuilder sb = new StringBuilder("📄 Certificados de préstamos:\n\n");
         List<Prestamo> lista = gestorPrestamos.obtenerPrestamosAprobados();
-        for (Prestamo p : lista) {
-            String nombre = gestorClientes.buscarClientePorId(p.getIdCliente()).getNombre();
-            sb.append("Cliente: ").append(nombre)
-                    .append(" | Monto: $").append(p.getMonto())
-                    .append(" | Cuotas: ").append(p.getCuotas()).append("\n");
+        if (lista.isEmpty()) {
+            sb.append("No hay préstamos aprobados.");
+        } else {
+            for (Prestamo p : lista) {
+                Cliente c = p.getCliente();
+                sb.append("Cliente: ").append(c.getNombre()).append(" ").append(c.getApellido()).append("\n")
+                        .append("Monto aprobado: $").append(String.format("%.2f", p.getMonto())).append("\n")
+                        .append("Cuotas: ").append(p.getCuotas()).append(" | Interés: ")
+                        .append(String.format("%.2f", p.getInteres() * 100)).append("%\n")
+                        .append("Total a pagar: $").append(String.format("%.2f", p.calcularTotalConInteres())).append("\n")
+                        .append("----------------------------------------\n");
+            }
         }
         txtCertificados.setText(sb.toString());
+    }
+
+    private void createUIComponents() {
+        // si usas .form, deja esto vacío
     }
 }

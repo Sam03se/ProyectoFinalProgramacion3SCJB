@@ -28,7 +28,8 @@ public class FormConsultarPrioridad extends JFrame {
         StringBuilder sb = new StringBuilder("🔝 Cola de Préstamos Prioritarios:\n");
         PriorityQueue<Prestamo> cola = gestorPrestamos.obtenerColaPrioridad();
         for (Prestamo p : cola) {
-            sb.append("Cliente ID: ").append(p.getIdCliente())
+            sb.append("Cliente: ").append(p.getCliente().getNombre()).append(" ").append(p.getCliente().getApellido())
+                    .append(" | Zona: ").append(p.getCliente().getZona())
                     .append(" | Monto: $").append(p.getMonto())
                     .append(" | Destino: ").append(p.getDestino()).append("\n");
         }

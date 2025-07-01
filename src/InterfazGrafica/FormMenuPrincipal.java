@@ -4,6 +4,7 @@ import gestores.GestorClientes;
 import gestores.GestorPrestamos;
 
 import javax.swing.*;
+import java.awt.event.ActionEvent;
 
 public class FormMenuPrincipal extends JFrame {
     private JPanel panelPrincipal;
@@ -13,29 +14,32 @@ public class FormMenuPrincipal extends JFrame {
     private JButton btnVerHistorial;
     private JButton btnVerPrioridad;
     private JButton btnVerCertificados;
-    private JButton btnGestionClientes;
+    private JButton btnGestionarClientes;
 
-    private GestorClientes gestorClientes;
-    private GestorPrestamos gestorPrestamos;
+    private final GestorClientes gestorClientes;
+    private final GestorPrestamos gestorPrestamos;
 
-    public FormMenuPrincipal() {
+    public FormMenuPrincipal(GestorClientes gestorClientes, GestorPrestamos gestorPrestamos) {
+        this.gestorClientes = gestorClientes;
+        this.gestorPrestamos = gestorPrestamos;
+
         setTitle("Sistema de Préstamos");
         setContentPane(panelPrincipal);
-        setDefaultCloseOperation(EXIT_ON_CLOSE);
-        setSize(600, 400);
+        setSize(400, 400);
         setLocationRelativeTo(null);
+        setDefaultCloseOperation(EXIT_ON_CLOSE);
 
-        gestorClientes = new GestorClientes();
-        gestorPrestamos = new GestorPrestamos();
-
-        btnRegistrarCliente.addActionListener(e -> new FormRegistroCliente(gestorClientes).setVisible(true));
-        btnSolicitarPrestamo.addActionListener(e -> new FormPrestamo(gestorClientes, gestorPrestamos).setVisible(true));
-        btnAprobarPrestamo.addActionListener(e -> new FormAprobacionManual(gestorPrestamos).setVisible(true));
-        btnVerHistorial.addActionListener(e -> new FormHistorial(gestorPrestamos).setVisible(true));
-        btnVerPrioridad.addActionListener(e -> new FormConsultarPrioridad(gestorPrestamos).setVisible(true));
-        btnVerCertificados.addActionListener(e -> new FormCertificados(gestorPrestamos, gestorClientes).setVisible(true));
-        btnGestionClientes.addActionListener(e -> new FormCliente(gestorClientes).setVisible(true));
-
-        setVisible(true);
+        configurarAcciones();
     }
+
+    private void configurarAcciones() {
+        btnRegistrarCliente.addActionListener((ActionEvent e) -> new FormCliente(gestorClientes));
+        btnSolicitarPrestamo.addActionListener((ActionEvent e) -> new FormPrestamo(gestorClientes, gestorPrestamos));
+        btnAprobarPrestamo.addActionListener((ActionEvent e) -> new FormAprobacionManual(gestorPrestamos));
+        btnVerHistorial.addActionListener((ActionEvent e) -> new FormHistorial(gestorPrestamos));
+        btnVerPrioridad.addActionListener((ActionEvent e) -> new FormConsultarPrioridad(gestorPrestamos));
+        btnVerCertificados.addActionListener(e -> new FormCertificados(gestorPrestamos, gestorClientes));
+        btnGestionarClientes.addActionListener((ActionEvent e) -> new FormCliente(gestorClientes));
+    }
+
 }

@@ -5,7 +5,6 @@ import modelos.Prestamo;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
 public class FormAprobacionManual extends JPanel {
     private JList<String> listaSolicitudes;
@@ -41,30 +40,37 @@ public class FormAprobacionManual extends JPanel {
 
         cargarSolicitudes();
 
-        btnAprobarSeleccionado.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                int index = listaSolicitudes.getSelectedIndex();
-                if (index >= 0) {
-                    String selectedValue = modeloLista.getElementAt(index);
-                    int id = extraerIdDesdeTexto(selectedValue);
-                    if (gestorPrestamos.aprobarPrestamoPorId(id)) {
-                        txtResumenAprobacion.setText("✅ Préstamo aprobado correctamente.\n" + selectedValue);
-                        cargarSolicitudes();
-                    } else {
-                        txtResumenAprobacion.setText("❌ No se pudo aprobar el préstamo.");
-                    }
+        btnAprobarSeleccionado.addActionListener((ActionEvent e) -> {
+            int index = listaSolicitudes.getSelectedIndex();
+            if (index >= 0) {
+                String selectedValue = modeloLista.getElementAt(index);
+                int id = extraerIdDesdeTexto(selectedValue);
+                if (gestorPrestamos.aprobarPrestamoPorId(id)) {
+                    // Trazabilidad
+                    String eval = gestorPrestamos.getHistorialOperaciones().get(
+                            gestorPrestamos.getHistorialOperaciones().size() - 2
+                    );
+                    String registro = gestorPrestamos.getHistorialOperaciones().get(
+                            gestorPrestamos.getHistorialOperaciones().size() - 1
+                    );
+                    txtResumenAprobacion.setText("✅ Aprobado:\n" + eval + "\n" + registro);
+                    cargarSolicitudes();
                 } else {
-                    txtResumenAprobacion.setText("⚠️ Selecciona una solicitud para aprobar.");
+                    txtResumenAprobacion.setText("❌ No se pudo aprobar el préstamo.");
                 }
+            } else {
+                txtResumenAprobacion.setText("⚠️ Selecciona una solicitud para aprobar.");
             }
         });
     }
 
     private void cargarSolicitudes() {
         modeloLista.clear();
-        for (Prestamo p : gestorPrestamos.obtenerPrestamosPendientes()) {
-            modeloLista.addElement("ID: " + p.getId() + " | Cliente: " + p.getIdCliente() + " | $" + p.getMonto() + " | Cuotas: " + p.getCuotas());
+        for (Prestamo p : gestorPrestamos.obtenerSolicitudesPendientes()) {
+            modeloLista.addElement("ID: " + p.getId()
+                    + " | Cliente: " + p.getCliente().getNombre()
+                    + " | $" + p.getMonto()
+                    + " | Cuotas: " + p.getCuotas());
         }
     }
 

@@ -37,6 +37,14 @@ public class Prestamo implements Comparable<Prestamo> {
         return cliente;
     }
 
+    public void setCliente(Cliente cliente) {
+        this.cliente = cliente;
+    }
+
+    public int getIdCliente() {
+        return cliente != null ? cliente.getId() : -1;
+    }
+
     public double getMonto() {
         return monto;
     }
@@ -61,7 +69,6 @@ public class Prestamo implements Comparable<Prestamo> {
         this.interes = interes;
     }
 
-    // Fórmula financiera real
     public double calcularValorCuotaAvanzada() {
         double tasaMensual = interes / cuotas;
         return (monto * tasaMensual * Math.pow(1 + tasaMensual, cuotas)) / (Math.pow(1 + tasaMensual, cuotas) - 1);
@@ -73,13 +80,13 @@ public class Prestamo implements Comparable<Prestamo> {
 
     @Override
     public int compareTo(Prestamo otro) {
-        return Double.compare(otro.monto, this.monto); // mayor monto = mayor prioridad
+        return Double.compare(otro.monto, this.monto); // Mayor monto = mayor prioridad
     }
 
     @Override
     public String toString() {
         return "Préstamo ID: " + id +
-                " | Cliente: " + cliente.getId() + " - " + cliente.getNombre() +
+                " | Cliente: " + (cliente != null ? cliente.getId() + " - " + cliente.getNombre() : "N/A") +
                 " | $" + monto + " | Cuotas: " + cuotas;
     }
 }

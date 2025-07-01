@@ -14,6 +14,8 @@ public class GestorPrestamos {
     private List<Prestamo> prestamosAprobados = new ArrayList<>();
     private int idPrestamoCounter = 1;
 
+
+
     private final Map<Integer, Double> tablaIntereses = Map.ofEntries(
             Map.entry(3, 0.03), Map.entry(6, 0.06), Map.entry(9, 0.09),
             Map.entry(12, 0.12), Map.entry(18, 0.15), Map.entry(24, 0.18),
@@ -22,6 +24,11 @@ public class GestorPrestamos {
     );
 
     private final ArbolEvaluador evaluador = new ArbolEvaluador();
+    private GestorClientes gestorClientes; // Para vincular cliente al préstamo
+
+    public void setGestorClientes(GestorClientes gestorClientes) {
+        this.gestorClientes = gestorClientes;
+    }
 
     // Registrar solicitud de préstamo con IA y comprobante
     public boolean solicitarPrestamo(Cliente cliente, double monto, String destino, int cuotas) {
@@ -41,10 +48,13 @@ public class GestorPrestamos {
         colaSolicitudes.add(prestamo);
         historialOperaciones.add("📝 Solicitud registrada: " + prestamo);
 
-        // ✅ Generar comprobante en archivo .txt
         ComprobantePrestamo.guardarComoTxt(prestamo);
-
         return true;
+    }
+
+    // Solo borra el historial, no toca datos
+    public void limpiarSoloHistorial() {
+        historialOperaciones.clear();
     }
 
     // Aprobar préstamo por ID
@@ -64,8 +74,16 @@ public class GestorPrestamos {
     }
 
     public List<Prestamo> obtenerSolicitudesPendientes() {
-        return new ArrayList<>(colaSolicitudes);
+        List<Prestamo> lista = new ArrayList<>();
+        for (Prestamo p : colaSolicitudes) {
+            if (p.getCliente() == null && gestorClientes != null) {
+                p.setCliente(gestorClientes.buscarClientePorId(p.getIdCliente()));
+            }
+            lista.add(p);
+        }
+        return lista;
     }
+
 
     public List<Prestamo> obtenerPrestamosAprobados() {
         return new ArrayList<>(prestamosAprobados);
@@ -80,7 +98,7 @@ public class GestorPrestamos {
     }
 
     public double obtenerInteresPorMeses(int meses) {
-        return tablaIntereses.getOrDefault(meses, 0.15); // default: 15%
+        return tablaIntereses.getOrDefault(meses, 0.15); // valor por defecto si no está
     }
 
     public void limpiarDatos() {
