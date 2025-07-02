@@ -42,7 +42,6 @@ public class FormMenuPrincipal extends JFrame {
         btnVerHistorial.addActionListener((ActionEvent e) -> new FormHistorial(gestorPrestamos));
         btnVerPrioridad.addActionListener((ActionEvent e) -> new FormConsultarPrioridad(gestorPrestamos));
         btnVerCertificados.addActionListener(e -> new FormCertificados(gestorPrestamos, gestorClientes));
-        btnGestionarClientes.addActionListener((ActionEvent e) -> new FormCliente(gestorClientes));
         btnSimularPagoCuenta.addActionListener(e -> new FormSimularPagoCuenta(gestorPrestamos, gestorClientes));
         btnExportarResumenPrestamo.addActionListener(e -> new FormExportarResumenPrestamo(gestorPrestamos, gestorClientes));
         btnAsociarCuenta.addActionListener(e -> new FormAsociarCuentaBancaria(gestorClientes, gestorPrestamos));

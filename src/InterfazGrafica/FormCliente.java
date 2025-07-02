@@ -20,9 +20,9 @@ public class FormCliente extends JFrame {
     private JTextField txtAntiguedad;
     private JTextArea txtListaClientes;
     private JButton btnAgregar;
-    private JButton btnEditar;
     private JButton btnEliminar;
     private JButton btnListar;
+    private JButton btnEditar;
     private JButton btnCancelar;
 
     private final GestorClientes gestorClientes;
@@ -68,7 +68,7 @@ public class FormCliente extends JFrame {
             }
         });
 
-        btnListar.addActionListener(e -> {
+        btnEditar.addActionListener(e -> {
             StringBuilder sb = new StringBuilder("📋 Lista de Clientes: ");
             for (Cliente c : gestorClientes.listarClientes()) {
                 sb.append("ID: ").append(c.getId())
@@ -78,7 +78,7 @@ public class FormCliente extends JFrame {
             txtListaClientes.setText(sb.toString());
         });
 
-        btnEditar.addActionListener(e -> {
+        btnEliminar.addActionListener(e -> {
             try {
                 int id = Integer.parseInt(txtId.getText().trim());
                 String nombre = txtNombre.getText().trim();
@@ -96,7 +96,7 @@ public class FormCliente extends JFrame {
             }
         });
 
-        btnEliminar.addActionListener(e -> {
+        btnListar.addActionListener(e -> {
             try {
                 int id = Integer.parseInt(txtId.getText().trim());
                 if (gestorClientes.eliminarCliente(id)) {

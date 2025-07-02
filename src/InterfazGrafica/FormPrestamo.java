@@ -6,17 +6,15 @@ import modelos.Cliente;
 import modelos.Prestamo;
 
 import javax.swing.*;
-import java.awt.event.ActionEvent;
-import java.util.List;
 
 public class FormPrestamo extends JFrame {
     private JPanel panelPrincipal;
-    private JComboBox<Cliente> comboClientes;
+    private JComboBox<Cliente> cmbClientes;
     private JTextField txtMonto;
     private JTextField txtDestino;
     private JButton btnSolicitar;
     private JCheckBox chkDiferido;
-    private JComboBox<Integer> comboCuotas;
+    private JComboBox<Integer> cmbCuotas;
     private JTextArea txtResumenCalculo;
     private JButton btnCancelar;
 
@@ -39,65 +37,76 @@ public class FormPrestamo extends JFrame {
     }
 
     private void inicializarCampos() {
-        comboClientes.removeAllItems();
+        cmbClientes.removeAllItems();
         for (Cliente c : gestorClientes.listarClientes()) {
-            comboClientes.addItem(c);
+            cmbClientes.addItem(c);
         }
 
         int[] opcionesCuotas = {3, 6, 9, 12, 18, 24, 36, 48, 60, 72};
         for (int cuotas : opcionesCuotas) {
-            comboCuotas.addItem(cuotas);
+            cmbCuotas.addItem(cuotas);
         }
 
         txtResumenCalculo.setEditable(false);
     }
 
     private void configurarAcciones() {
-        btnSolicitar.addActionListener((ActionEvent e) -> {
-            Cliente cliente = (Cliente) comboClientes.getSelectedItem();
-            if (cliente == null) {
-                txtResumenCalculo.setText("⚠️ Selecciona un cliente.");
-                return;
-            }
+        btnSolicitar.addActionListener(e -> {
+            String seleccionado = (String) cmbClientes.getSelectedItem();
+            if (seleccionado == null) return;
+
+            int id = Integer.parseInt(seleccionado.split(" - ")[0].trim());
+            Cliente cliente = gestorClientes.buscarPorId(id);
+            if (cliente == null) return;
 
             try {
-                double monto = Double.parseDouble(txtMonto.getText().trim());
+                double monto = Double.parseDouble(txtMonto.getText());
                 String destino = txtDestino.getText().trim();
-                int cuotas = (int) comboCuotas.getSelectedItem();
-                boolean diferido = chkDiferido.isSelected();
+                int cuotas = Integer.parseInt(cmbCuotas.getSelectedItem().toString());
 
-                boolean exito = gestorPrestamos.solicitarPrestamo(cliente, monto, destino, cuotas);
-
-                List<String> historial = gestorPrestamos.getHistorialOperaciones();
-                String trazabilidad = historial.get(historial.size() - 2); // evaluación IA
-                String resultado = historial.get(historial.size() - 1);    // aprobado o rechazado
-
-                txtResumenCalculo.setText(trazabilidad + "\n" + resultado);
-
-                if (!exito) {
+                if (cuotas <= 0) {
+                    JOptionPane.showMessageDialog(this, "Las cuotas deben ser mayores a cero.");
                     return;
                 }
 
-                // Mostrar detalles del préstamo si fue exitoso
-                Prestamo ultimo = gestorPrestamos.obtenerPrestamosPendientes()
-                        .get(gestorPrestamos.obtenerPrestamosPendientes().size() - 1);
-                double total = ultimo.calcularTotalConInteres();
-                double cuota = ultimo.calcularValorCuotaAvanzada();
+                boolean diferido = chkDiferido.isSelected();
 
-                txtResumenCalculo.append("\n--------------------------------------\n");
-                txtResumenCalculo.append("Cliente: " + cliente.getNombre() + " " + cliente.getApellido() + "\n");
+                // Asignar interés según las cuotas
+                double interes = (cuotas <= 6) ? 0.05 : 0.10;
+
+                // Crear el préstamo
+                Prestamo prestamo = new Prestamo(
+                        gestorPrestamos.listarPrestamos().size() + 1,
+                        cliente, monto, destino, cuotas
+                );
+                prestamo.setDiferido(diferido);
+                prestamo.setInteres(interes);
+
+                if (!gestorPrestamos.agregarPrestamo(prestamo)) {
+                    JOptionPane.showMessageDialog(this, "Ya existe un préstamo con ese ID.");
+                    return;
+                }
+
+                double total = prestamo.calcularTotalConInteres();
+                double cuota = prestamo.calcularCuotaMensual();
+
+                txtResumenCalculo.setText("");
+                txtResumenCalculo.append("Cliente: " + cliente.getNombre() + "\n");
                 txtResumenCalculo.append("Monto: $" + String.format("%.2f", monto) + "\n");
                 txtResumenCalculo.append("Cuotas: " + cuotas + "\n");
-                txtResumenCalculo.append("Interés aplicado: " + (ultimo.getInteres() * 100) + "%\n");
+                txtResumenCalculo.append("Interés aplicado: " + (interes * 100) + "%\n");
                 txtResumenCalculo.append("Total a pagar: $" + String.format("%.2f", total) + "\n");
-                txtResumenCalculo.append("Cuota mensual: $" + String.format("%.2f", cuota));
-                if (diferido) txtResumenCalculo.append(" (diferido)");
+
+                if (diferido) {
+                    txtResumenCalculo.append("Cuota mensual: $" + String.format("%.2f", cuota) + " (diferido)\n");
+                } else {
+                    txtResumenCalculo.append("Cuota mensual: $" + String.format("%.2f", cuota) + "\n");
+                }
 
             } catch (NumberFormatException ex) {
-                txtResumenCalculo.setText("⚠️ Ingrese un monto válido.");
+                JOptionPane.showMessageDialog(this, "Error en el formato de monto.");
             }
         });
-
         btnCancelar.addActionListener(e -> dispose());
     }
 }

@@ -8,7 +8,7 @@
     <properties/>
     <border type="none"/>
     <children>
-      <component id="db274" class="javax.swing.JComboBox" binding="comboClientes">
+      <component id="db274" class="javax.swing.JComboBox" binding="cmbClientes">
         <constraints>
           <grid row="0" column="1" row-span="1" col-span="2" vsize-policy="0" hsize-policy="2" anchor="8" fill="1" indent="0" use-parent-layout="false"/>
         </constraints>
@@ -98,7 +98,7 @@
           <text value="Diferido"/>
         </properties>
       </component>
-      <component id="31471" class="javax.swing.JComboBox" binding="comboCuotas">
+      <component id="31471" class="javax.swing.JComboBox" binding="cmbCuotas">
         <constraints>
           <grid row="3" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="2" anchor="8" fill="1" indent="0" use-parent-layout="false"/>
         </constraints>

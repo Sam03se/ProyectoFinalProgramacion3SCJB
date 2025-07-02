@@ -1,6 +1,6 @@
 package modelos;
 
-public class Prestamo implements Comparable<Prestamo> {
+public class Prestamo {
     private int id;
     private Cliente cliente;
     private double monto;
@@ -8,12 +8,9 @@ public class Prestamo implements Comparable<Prestamo> {
     private int cuotas;
     private boolean diferido;
     private double interes;
+    private boolean cuotaAvanzada; // ✅ NUEVO campo para seguimiento de pago
 
     public Prestamo(int id, Cliente cliente, double monto, String destino, int cuotas) {
-        if (monto <= 0 || cuotas <= 0 || cliente == null || destino.isEmpty()) {
-            throw new IllegalArgumentException("Datos del préstamo inválidos.");
-        }
-
         this.id = id;
         this.cliente = cliente;
         this.monto = monto;
@@ -21,28 +18,16 @@ public class Prestamo implements Comparable<Prestamo> {
         this.cuotas = cuotas;
         this.diferido = false;
         this.interes = 0.0;
+        this.cuotaAvanzada = false; // por defecto, aún no se ha pagado nada
     }
 
-    public Prestamo(int id, Cliente cliente, double monto, String destino, int cuotas, boolean diferido, double interes) {
-        this(id, cliente, monto, destino, cuotas);
-        this.diferido = diferido;
-        this.interes = interes;
-    }
-
+    // --- Getters y Setters ---
     public int getId() {
         return id;
     }
 
     public Cliente getCliente() {
         return cliente;
-    }
-
-    public void setCliente(Cliente cliente) {
-        this.cliente = cliente;
-    }
-
-    public int getIdCliente() {
-        return cliente != null ? cliente.getId() : -1;
     }
 
     public double getMonto() {
@@ -65,28 +50,49 @@ public class Prestamo implements Comparable<Prestamo> {
         return interes;
     }
 
+    public boolean getCuotaAvanzada() {
+        return cuotaAvanzada;
+    }
+
+    public void setDiferido(boolean diferido) {
+        this.diferido = diferido;
+    }
+
     public void setInteres(double interes) {
         this.interes = interes;
     }
 
-    public double calcularValorCuotaAvanzada() {
-        double tasaMensual = interes / cuotas;
-        return (monto * tasaMensual * Math.pow(1 + tasaMensual, cuotas)) / (Math.pow(1 + tasaMensual, cuotas) - 1);
+    public void setMonto(double monto) {
+        this.monto = monto;
     }
 
+    public void setCuotas(int cuotas) {
+        this.cuotas = cuotas;
+    }
+
+    public void setDestino(String destino) {
+        this.destino = destino;
+    }
+
+    public void setCuotaAvanzada(boolean cuotaAvanzada) {
+        this.cuotaAvanzada = cuotaAvanzada;
+    }
+
+    // --- Métodos de cálculo ---
     public double calcularTotalConInteres() {
-        return calcularValorCuotaAvanzada() * cuotas;
+        return monto + (monto * interes);
     }
 
-    @Override
-    public int compareTo(Prestamo otro) {
-        return Double.compare(otro.monto, this.monto); // Mayor monto = mayor prioridad
+    public double calcularCuotaMensual() {
+        if (cuotas == 0) return 0;
+        return calcularTotalConInteres() / cuotas;
     }
 
     @Override
     public String toString() {
         return "Préstamo ID: " + id +
-                " | Cliente: " + (cliente != null ? cliente.getId() + " - " + cliente.getNombre() : "N/A") +
-                " | $" + monto + " | Cuotas: " + cuotas;
+                " | Cliente: " + cliente.getId() + " - " + cliente.getNombre() +
+                " | $" + monto +
+                " | Cuotas: " + cuotas;
     }
 }

@@ -26,7 +26,6 @@ public class ComprobantePrestamo {
             sb.append("Tipo: Cuotas mensuales\n");
             sb.append("Cuotas: ").append(p.getCuotas()).append("\n");
             sb.append("Interés aplicado: ").append(String.format("%.2f", p.getInteres() * 100)).append("%\n");
-            sb.append("Valor por cuota: $").append(String.format("%.2f", p.calcularValorCuotaAvanzada())).append("\n");
             sb.append("Total a pagar: $").append(String.format("%.2f", p.calcularTotalConInteres())).append("\n");
         } else {
             sb.append("Tipo: Pago único\n");

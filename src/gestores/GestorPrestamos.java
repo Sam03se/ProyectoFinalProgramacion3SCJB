@@ -130,11 +130,30 @@ public class GestorPrestamos {
     }
     // ✅ Método para solicitar un préstamo
     public boolean solicitarPrestamo(Cliente cliente, double monto, String destino, int cuotas) {
-        if (cliente == null || monto <= 0 || cuotas <= 0 || destino == null || destino.isEmpty()) {
-            return false;
-        }
+        int id = prestamos.size() + 1;
+        Prestamo p = new Prestamo(id, cliente, monto, destino, cuotas);
 
-        int nuevoId = prestamos.size() + 1;
+        if (cuotas > 1) {
+            p.setDiferido(true);
+            // Aplica interés según número de cuotas
+            if (cuotas <= 3) {
+                p.setInteres(0.05); // 5%
+            } else if (cuotas <= 6) {
+                p.setInteres(0.10); // 10%
+            } else {
+                p.setInteres(0.15); // 15%
+            }
+        } else {
+            p.setDiferido(false);
+            p.setInteres(0.0);
+
+
+        prestamos.add(p);
+        return true;
+    }
+
+
+    int nuevoId = prestamos.size() + 1;
         Prestamo nuevo = new Prestamo(nuevoId, cliente, monto, destino, cuotas);
         return agregarPrestamo(nuevo);
     }
