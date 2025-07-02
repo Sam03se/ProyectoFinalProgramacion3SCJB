@@ -45,15 +45,16 @@ public class FormAprobacionManual extends JPanel {
             if (index >= 0) {
                 String selectedValue = modeloLista.getElementAt(index);
                 int id = extraerIdDesdeTexto(selectedValue);
+
                 if (gestorPrestamos.aprobarPrestamoPorId(id)) {
-                    // Trazabilidad
-                    String eval = gestorPrestamos.getHistorialOperaciones().get(
-                            gestorPrestamos.getHistorialOperaciones().size() - 2
-                    );
-                    String registro = gestorPrestamos.getHistorialOperaciones().get(
-                            gestorPrestamos.getHistorialOperaciones().size() - 1
-                    );
-                    txtResumenAprobacion.setText("✅ Aprobado:\n" + eval + "\n" + registro);
+                    Prestamo p = gestorPrestamos.buscarPorId(id);
+                    String resumen = "✅ Préstamo aprobado\n"
+                            + "Cliente: " + p.getCliente().getNombre() + " " + p.getCliente().getApellido() + "\n"
+                            + "Monto: $" + p.getMonto() + "\n"
+                            + "Cuotas: " + p.getCuotas() + "\n"
+                            + "Interés aplicado: " + (p.getInteres() * 100) + "%";
+
+                    txtResumenAprobacion.setText(resumen);
                     cargarSolicitudes();
                 } else {
                     txtResumenAprobacion.setText("❌ No se pudo aprobar el préstamo.");

@@ -4,35 +4,50 @@ import gestores.GestorPrestamos;
 import modelos.Prestamo;
 
 import javax.swing.*;
+import java.awt.*;
 import java.util.PriorityQueue;
 
 public class FormConsultarPrioridad extends JFrame {
     private JPanel panelPrincipal;
-    private JTextArea txtPrioridad;
-    private final GestorPrestamos gestorPrestamos;
+    private JTextArea txtAreaPrioridad;
 
     public FormConsultarPrioridad(GestorPrestamos gestorPrestamos) {
-        this.gestorPrestamos = gestorPrestamos;
-
-        setContentPane(panelPrincipal);
-        setTitle("Préstamos Prioritarios");
+        setTitle("Cola de Prioridad - Préstamos Pendientes");
         setSize(500, 400);
-        setLocationRelativeTo(null);
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
-        setVisible(true);
+        setLocationRelativeTo(null);
 
-        mostrarColaPrioridad();
+        panelPrincipal = new JPanel();
+        panelPrincipal.setLayout(new BorderLayout());
+
+        txtAreaPrioridad = new JTextArea();
+        txtAreaPrioridad.setEditable(false);
+        JScrollPane scroll = new JScrollPane(txtAreaPrioridad);
+
+        panelPrincipal.add(scroll, BorderLayout.CENTER);
+        setContentPane(panelPrincipal);
+
+        mostrarCola(gestorPrestamos);
+        setVisible(true);
     }
 
-    private void mostrarColaPrioridad() {
-        StringBuilder sb = new StringBuilder("🔝 Cola de Préstamos Prioritarios:\n");
+    private void mostrarCola(GestorPrestamos gestorPrestamos) {
         PriorityQueue<Prestamo> cola = gestorPrestamos.obtenerColaPrioridad();
-        for (Prestamo p : cola) {
-            sb.append("Cliente: ").append(p.getCliente().getNombre()).append(" ").append(p.getCliente().getApellido())
-                    .append(" | Zona: ").append(p.getCliente().getZona())
-                    .append(" | Monto: $").append(p.getMonto())
-                    .append(" | Destino: ").append(p.getDestino()).append("\n");
+        StringBuilder sb = new StringBuilder("📌 Orden de prioridad para aprobación:\n\n");
+
+        if (cola.isEmpty()) {
+            sb.append("No hay solicitudes pendientes.");
+        } else {
+            int pos = 1;
+            while (!cola.isEmpty()) {
+                Prestamo p = cola.poll();
+                sb.append(pos++).append(". Cliente: ").append(p.getCliente().getNombre())
+                        .append(" | Edad: ").append(p.getCliente().getEdad())
+                        .append(" | Ingreso: $").append(p.getCliente().getIngresoMensual())
+                        .append(" | Monto: $").append(p.getMonto()).append("\n");
+            }
         }
-        txtPrioridad.setText(sb.toString());
+
+        txtAreaPrioridad.setText(sb.toString());
     }
 }

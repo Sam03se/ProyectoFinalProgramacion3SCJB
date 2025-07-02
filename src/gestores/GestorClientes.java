@@ -6,60 +6,51 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class GestorClientes {
-    private List<Cliente> clientes;
+    private final List<Cliente> listaClientes = new ArrayList<>();
 
-    public GestorClientes() {
-        clientes = new ArrayList<>();
-    }
-
-    // Agregar cliente si no existe el ID
-    public boolean agregarCliente(Cliente nuevoCliente) {
-        if (buscarClientePorId(nuevoCliente.getId()) != null) {
-            System.out.println("Cliente con ID " + nuevoCliente.getId() + " ya existe.");
-            return false;
+    // Agregar cliente si no existe
+    public boolean agregarCliente(Cliente cliente) {
+        if (buscarPorId(cliente.getId()) == null) {
+            listaClientes.add(cliente);
+            return true;
         }
-        clientes.add(nuevoCliente);
-        return true;
+        return false;
     }
 
+    // Editar cliente existente
+    public boolean editarCliente(int id, String nombre, String apellido, String correo) {
+        Cliente cliente = buscarPorId(id);
+        if (cliente != null) {
+            cliente.setNombre(nombre);
+            cliente.setApellido(apellido);
+            cliente.setCorreo(correo);
+            return true;
+        }
+        return false;
+    }
+
+    // Eliminar cliente por ID
+    public boolean eliminarCliente(int id) {
+        Cliente cliente = buscarPorId(id);
+        if (cliente != null) {
+            listaClientes.remove(cliente);
+            return true;
+        }
+        return false;
+    }
+
+    // Listar todos los clientes
     public List<Cliente> listarClientes() {
-        return new ArrayList<>(clientes); // evitar acceso directo al array
+        return new ArrayList<>(listaClientes);
     }
 
-    public Cliente buscarClientePorId(int id) {
-        for (Cliente cliente : clientes) {
-            if (cliente.getId() == id) {
-                return cliente;
+    // Buscar cliente por ID (método NUEVO)
+    public Cliente buscarPorId(int id) {
+        for (Cliente c : listaClientes) {
+            if (c.getId() == id) {
+                return c;
             }
         }
         return null;
-    }
-
-    public boolean editarCliente(int id, String nuevoNombre, String nuevoApellido, String nuevoCorreo) {
-        Cliente cliente = buscarClientePorId(id);
-        if (cliente != null) {
-            cliente.setNombre(nuevoNombre);
-            cliente.setApellido(nuevoApellido);
-            cliente.setCorreo(nuevoCorreo);
-            return true;
-        }
-        return false;
-    }
-
-    public boolean eliminarCliente(int id) {
-        Cliente cliente = buscarClientePorId(id);
-        if (cliente != null) {
-            clientes.remove(cliente);
-            return true;
-        }
-        return false;
-    }
-
-    public boolean existeCliente(int id) {
-        return buscarClientePorId(id) != null;
-    }
-
-    public void limpiarClientes() {
-        clientes.clear();
     }
 }

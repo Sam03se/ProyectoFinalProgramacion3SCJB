@@ -79,7 +79,8 @@ public class FormPrestamo extends JFrame {
                 }
 
                 // Mostrar detalles del préstamo si fue exitoso
-                Prestamo ultimo = gestorPrestamos.obtenerSolicitudesPendientes().getLast();
+                Prestamo ultimo = gestorPrestamos.obtenerPrestamosPendientes()
+                        .get(gestorPrestamos.obtenerPrestamosPendientes().size() - 1);
                 double total = ultimo.calcularTotalConInteres();
                 double cuota = ultimo.calcularValorCuotaAvanzada();
 

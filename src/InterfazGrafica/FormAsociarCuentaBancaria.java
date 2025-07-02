@@ -11,9 +11,10 @@ import java.awt.event.ActionEvent;
 public class FormAsociarCuentaBancaria extends JFrame {
     private JPanel panelPrincipal;
     private JTextField txtIdCliente;
+    private JButton btnAsociar;
+    private JTextArea txtResumen;
     private JTextField txtCuenta;
-    private JButton btnGuardar;
-    private JButton btnCancelar;
+    private JButton btnCerrar;
 
     private final GestorClientes gestorClientes;
     private final GestorPrestamos gestorPrestamos;
@@ -23,54 +24,55 @@ public class FormAsociarCuentaBancaria extends JFrame {
         this.gestorPrestamos = gestorPrestamos;
 
         setTitle("Asociar Cuenta Bancaria");
+        setSize(500, 400);
         setContentPane(panelPrincipal);
-        setSize(400, 250);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         setVisible(true);
 
-        configurarAcciones();
+        btnAsociar.addActionListener((ActionEvent e) -> asociarCuenta());
+        btnCerrar.addActionListener(e -> dispose());
     }
 
-    private void configurarAcciones() {
-        btnGuardar.addActionListener((ActionEvent e) -> {
-            try {
-                int id = Integer.parseInt(txtIdCliente.getText().trim());
-                String cuenta = txtCuenta.getText().trim();
-
-                if (cuenta.length() != 10 || !cuenta.matches("\\d{10}")) {
-                    mostrar("⚠️ La cuenta debe tener exactamente 10 dígitos numéricos.");
-                    return;
-                }
-
-                Cliente c = gestorClientes.buscarClientePorId(id);
-                if (c == null) {
-                    mostrar("❌ Cliente no encontrado.");
-                    return;
-                }
-
-                Prestamo p = gestorPrestamos.buscarPrestamoAprobadoPorCliente(c);
-                if (p == null) {
-                    mostrar("⚠️ El cliente no tiene un préstamo aprobado aún.");
-                    return;
-                }
-
-                c.setCuentaBancaria(cuenta);
-                mostrar("✅ Cuenta asociada con éxito.");
-                dispose();
-            } catch (Exception ex) {
-                mostrar("❌ Error: " + ex.getMessage());
+    private void asociarCuenta() {
+        try {
+            int id = Integer.parseInt(txtIdCliente.getText().trim());
+            Cliente c = gestorClientes.buscarPorId(id);
+            if (c == null) {
+                mostrar("Cliente no encontrado.");
+                return;
             }
-        });
 
-        btnCancelar.addActionListener(e -> dispose());
+            Prestamo p = gestorPrestamos.buscarPrestamoAprobadoPorCliente(c);
+            if (p == null) {
+                mostrar("Cliente no tiene préstamo aprobado.");
+                return;
+            }
+
+            String cuenta = txtCuenta.getText().trim();
+            if (cuenta.length() != 10 || !cuenta.matches("\\d+")) {
+                mostrar("La cuenta bancaria debe tener 10 dígitos.");
+                return;
+            }
+
+            if (gestorPrestamos.asociarCuentaBancariaACliente(p.getId(), cuenta)) {
+                mostrar("Cuenta asociada correctamente.");
+                txtResumen.setText("Cliente: " + c.getNombre() + " " + c.getApellido() + "\n" +
+                        "Cuenta asociada: " + cuenta + "\n" +
+                        "Monto aprobado: $" + p.getMonto());
+            } else {
+                mostrar("No se pudo asociar la cuenta.");
+            }
+        } catch (Exception ex) {
+            mostrar("Error: " + ex.getMessage());
+        }
     }
 
-    private void mostrar(String mensaje) {
-        JOptionPane.showMessageDialog(this, mensaje);
+    private void mostrar(String msg) {
+        JOptionPane.showMessageDialog(this, msg);
     }
 
     private void createUIComponents() {
-        // generado automáticamente en el .form si usas IntelliJ
+        // Se diseña en el .form
     }
 }

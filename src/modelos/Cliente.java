@@ -10,9 +10,9 @@ public class Cliente {
     private String zona; // urbana o rural
     private double ingresoMensual;
     private int antiguedadLaboral; // en años
-    private String cuentaBancaria; // nuevo campo
+    private String cuentaBancaria; // 🔄 NUEVO
 
-    // Constructor completo sin cuenta (compatible con sistemas anteriores)
+    // Constructor completo
     public Cliente(int id, String nombre, String apellido, String cedula, String correo, int edad, String zona, double ingresoMensual, int antiguedadLaboral) {
         if (id <= 0) throw new IllegalArgumentException("ID debe ser positivo.");
         if (nombre == null || nombre.isEmpty()) throw new IllegalArgumentException("Nombre no puede estar vacío.");
@@ -33,13 +33,7 @@ public class Cliente {
         this.zona = zona.toLowerCase();
         this.ingresoMensual = ingresoMensual;
         this.antiguedadLaboral = antiguedadLaboral;
-        this.cuentaBancaria = null; // aún no registrada
-    }
-
-    // NUEVO: Constructor alternativo con cuenta bancaria
-    public Cliente(int id, String nombre, int edad, String zona, double ingresoMensual, String cuentaBancaria, String correo) {
-        this(id, nombre, "", "", correo, edad, zona, ingresoMensual, 0);
-        setCuentaBancaria(cuentaBancaria);
+        this.cuentaBancaria = null; // Inicialmente sin cuenta
     }
 
     // Getters
@@ -54,7 +48,7 @@ public class Cliente {
     public int getAntiguedadLaboral() { return antiguedadLaboral; }
     public String getCuentaBancaria() { return cuentaBancaria; }
 
-    // Setters con validación
+    // Setters
     public void setNombre(String nombre) {
         if (nombre == null || nombre.isEmpty()) throw new IllegalArgumentException("Nombre inválido.");
         this.nombre = nombre;
@@ -90,18 +84,19 @@ public class Cliente {
         this.antiguedadLaboral = antiguedad;
     }
 
-    // ✅ Nuevo setter con validación de cuenta bancaria
     public void setCuentaBancaria(String cuenta) {
         if (cuenta == null || !cuenta.matches("\\d{10}")) {
-            throw new IllegalArgumentException("La cuenta bancaria debe tener exactamente 10 dígitos.");
+            throw new IllegalArgumentException("Cuenta bancaria debe tener exactamente 10 dígitos.");
         }
         this.cuentaBancaria = cuenta;
     }
 
-    // Para mostrar en resumen
+    public boolean tieneCuentaBancaria() {
+        return cuentaBancaria != null && !cuentaBancaria.isEmpty();
+    }
+
     @Override
     public String toString() {
-        return id + " - " + nombre + " " + apellido + " | " + correo +
-                (cuentaBancaria != null ? " | Cuenta: " + cuentaBancaria : "");
+        return id + " - " + nombre + " " + apellido + " | " + correo;
     }
 }
