@@ -2,110 +2,94 @@ package gestores;
 
 import modelos.Cliente;
 import modelos.Prestamo;
-import ArbolIA.ArbolEvaluador;
-import run.ComprobantePrestamo;
 
 import java.util.*;
 
 public class GestorPrestamos {
-    private Queue<Prestamo> colaSolicitudes = new LinkedList<>();
-    private PriorityQueue<Prestamo> colaPrioridad = new PriorityQueue<>();
-    private List<String> historialOperaciones = new ArrayList<>();
-    private List<Prestamo> prestamosAprobados = new ArrayList<>();
-    private int idPrestamoCounter = 1;
+    private final List<Prestamo> prestamos;
 
-
-
-    private final Map<Integer, Double> tablaIntereses = Map.ofEntries(
-            Map.entry(3, 0.03), Map.entry(6, 0.06), Map.entry(9, 0.09),
-            Map.entry(12, 0.12), Map.entry(18, 0.15), Map.entry(24, 0.18),
-            Map.entry(36, 0.21), Map.entry(48, 0.25), Map.entry(60, 0.30),
-            Map.entry(72, 0.35)
-    );
-
-    private final ArbolEvaluador evaluador = new ArbolEvaluador();
-    private GestorClientes gestorClientes; // Para vincular cliente al préstamo
-
-    public void setGestorClientes(GestorClientes gestorClientes) {
-        this.gestorClientes = gestorClientes;
+    public GestorPrestamos() {
+        prestamos = new ArrayList<>();
     }
 
-    // Registrar solicitud de préstamo con IA y comprobante
-    public boolean solicitarPrestamo(Cliente cliente, double monto, String destino, int cuotas) {
-        StringBuilder trazabilidad = new StringBuilder();
-        String resultadoIA = evaluador.evaluarCliente(cliente, trazabilidad);
-
-        historialOperaciones.add("📊 Evaluación IA cliente " + cliente.getId() + ":\n" + trazabilidad);
-
-        if (!resultadoIA.equalsIgnoreCase("Aprobado")) {
-            historialOperaciones.add("❌ Rechazado por IA: Cliente " + cliente.getId());
-            return false;
-        }
-
-        double interes = obtenerInteresPorMeses(cuotas);
-        Prestamo prestamo = new Prestamo(idPrestamoCounter++, cliente, monto, destino, cuotas, false, interes);
-
-        colaSolicitudes.add(prestamo);
-        historialOperaciones.add("📝 Solicitud registrada: " + prestamo);
-
-        ComprobantePrestamo.guardarComoTxt(prestamo);
+    public boolean agregarPrestamo(Prestamo p) {
+        if (buscarPorId(p.getId()) != null) return false;
+        prestamos.add(p);
         return true;
     }
 
-    // Solo borra el historial, no toca datos
-    public void limpiarSoloHistorial() {
-        historialOperaciones.clear();
+    public Prestamo buscarPorId(int id) {
+        for (Prestamo p : prestamos) {
+            if (p.getId() == id) return p;
+        }
+        return null;
     }
 
-    // Aprobar préstamo por ID
-    public boolean aprobarPrestamoPorId(int id) {
-        Iterator<Prestamo> iterator = colaSolicitudes.iterator();
-        while (iterator.hasNext()) {
-            Prestamo p = iterator.next();
-            if (p.getId() == id) {
-                iterator.remove();
-                colaPrioridad.add(p);
-                prestamosAprobados.add(p);
-                historialOperaciones.add("✅ Aprobado manualmente: " + p);
-                return true;
-            }
+    public List<Prestamo> listarPrestamos() {
+        return new ArrayList<>(prestamos);
+    }
+
+    public boolean eliminarPrestamo(int id) {
+        Prestamo p = buscarPorId(id);
+        if (p != null) {
+            prestamos.remove(p);
+            return true;
         }
         return false;
     }
 
-    public List<Prestamo> obtenerSolicitudesPendientes() {
-        List<Prestamo> lista = new ArrayList<>();
-        for (Prestamo p : colaSolicitudes) {
-            if (p.getCliente() == null && gestorClientes != null) {
-                p.setCliente(gestorClientes.buscarClientePorId(p.getIdCliente()));
+    public List<Prestamo> obtenerPrestamosPendientes() {
+        List<Prestamo> pendientes = new ArrayList<>();
+        for (Prestamo p : prestamos) {
+            if (!p.esDiferido() && p.getInteres() == 0.0) {
+                pendientes.add(p);
             }
-            lista.add(p);
+        }
+        return pendientes;
+    }
+
+    public List<Prestamo> obtenerPrestamosAprobados() {
+        List<Prestamo> aprobados = new ArrayList<>();
+        for (Prestamo p : prestamos) {
+            if (p.getInteres() > 0) {
+                aprobados.add(p);
+            }
+        }
+        return aprobados;
+    }
+
+    // ✅ NUEVO: prestamos aprobados sin cuenta asociada
+    public List<Prestamo> obtenerPrestamosPendientesDeCuenta() {
+        List<Prestamo> sinCuenta = new ArrayList<>();
+        for (Prestamo p : obtenerPrestamosAprobados()) {
+            if (p.getCliente().getCuentaBancaria() == null) {
+                sinCuenta.add(p);
+            }
+        }
+        return sinCuenta;
+    }
+
+    // ✅ NUEVO: método para asociar una cuenta bancaria
+    public boolean asociarCuentaBancariaACliente(int idPrestamo, String cuenta) {
+        Prestamo p = buscarPorId(idPrestamo);
+        if (p == null) return false;
+        try {
+            p.getCliente().setCuentaBancaria(cuenta);
+            return true;
+        } catch (IllegalArgumentException ex) {
+            return false;
+        }
+    }
+
+    // OPCIONAL: prestamos de un cliente específico
+    public List<Prestamo> prestamosPorCliente(int idCliente) {
+        List<Prestamo> lista = new ArrayList<>();
+        for (Prestamo p : prestamos) {
+            if (p.getCliente().getId() == idCliente) {
+                lista.add(p);
+            }
         }
         return lista;
     }
-
-
-    public List<Prestamo> obtenerPrestamosAprobados() {
-        return new ArrayList<>(prestamosAprobados);
-    }
-
-    public List<String> getHistorialOperaciones() {
-        return new ArrayList<>(historialOperaciones);
-    }
-
-    public PriorityQueue<Prestamo> obtenerColaPrioridad() {
-        return new PriorityQueue<>(colaPrioridad);
-    }
-
-    public double obtenerInteresPorMeses(int meses) {
-        return tablaIntereses.getOrDefault(meses, 0.15); // valor por defecto si no está
-    }
-
-    public void limpiarDatos() {
-        colaSolicitudes.clear();
-        colaPrioridad.clear();
-        historialOperaciones.clear();
-        prestamosAprobados.clear();
-        idPrestamoCounter = 1;
-    }
 }
+
