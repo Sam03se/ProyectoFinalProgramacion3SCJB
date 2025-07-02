@@ -71,5 +71,6 @@ public class FormAsociarCuentaBancaria extends JFrame {
     }
 
     private void createUIComponents() {
+        // generado automáticamente en el .form si usas IntelliJ
     }
 }
