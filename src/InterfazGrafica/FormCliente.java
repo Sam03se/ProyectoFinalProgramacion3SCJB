@@ -1,4 +1,3 @@
-
 package InterfazGrafica;
 
 import gestores.GestorClientes;
@@ -18,12 +17,13 @@ public class FormCliente extends JFrame {
     private JComboBox<String> comboZona;
     private JTextField txtIngreso;
     private JTextField txtAntiguedad;
-    private JTextArea txtListaClientes;
+    private JList<Cliente> listaClientes;
     private JButton btnAgregar;
+    private JButton btnEditar;
     private JButton btnEliminar;
     private JButton btnListar;
-    private JButton btnEditar;
     private JButton btnCancelar;
+    private DefaultListModel<Cliente> modeloLista;
 
     private final GestorClientes gestorClientes;
 
@@ -39,6 +39,9 @@ public class FormCliente extends JFrame {
 
         comboZona.addItem("urbana");
         comboZona.addItem("rural");
+
+        modeloLista = new DefaultListModel<>();
+        listaClientes.setModel(modeloLista);
 
         configurarAcciones();
     }
@@ -68,17 +71,29 @@ public class FormCliente extends JFrame {
             }
         });
 
-        btnEditar.addActionListener(e -> {
-            StringBuilder sb = new StringBuilder("📋 Lista de Clientes: ");
+        btnListar.addActionListener(e -> {
+            modeloLista.clear();
             for (Cliente c : gestorClientes.listarClientes()) {
-                sb.append("ID: ").append(c.getId())
-                        .append(" | ").append(c.getNombre()).append(" ").append(c.getApellido())
-                        .append(" | Correo: ").append(c.getCorreo()).append(" ");
+                modeloLista.addElement(c);
             }
-            txtListaClientes.setText(sb.toString());
         });
 
-        btnEliminar.addActionListener(e -> {
+        listaClientes.addListSelectionListener(e -> {
+            Cliente c = listaClientes.getSelectedValue();
+            if (c != null) {
+                txtId.setText(String.valueOf(c.getId()));
+                txtNombre.setText(c.getNombre());
+                txtApellido.setText(c.getApellido());
+                txtCedula.setText(c.getCedula());
+                txtCorreo.setText(c.getCorreo());
+                txtEdad.setText(String.valueOf(c.getEdad()));
+                txtIngreso.setText(String.valueOf(c.getIngresoMensual()));
+                txtAntiguedad.setText(String.valueOf(c.getAntiguedadLaboral()));
+                comboZona.setSelectedItem(c.getZona());
+            }
+        });
+
+        btnEditar.addActionListener(e -> {
             try {
                 int id = Integer.parseInt(txtId.getText().trim());
                 String nombre = txtNombre.getText().trim();
@@ -86,27 +101,27 @@ public class FormCliente extends JFrame {
                 String correo = txtCorreo.getText().trim();
 
                 if (gestorClientes.editarCliente(id, nombre, apellido, correo)) {
-                    mostrar("✅ Cliente editado correctamente.");
+                    mostrar("Cliente editado correctamente.");
                 } else {
-                    mostrar("⚠️ Cliente no encontrado.");
+                    mostrar("Cliente no encontrado.");
                 }
                 limpiarCampos();
             } catch (Exception ex) {
-                mostrar("❌ Error al editar cliente: " + ex.getMessage());
+                mostrar("Error al editar cliente: " + ex.getMessage());
             }
         });
 
-        btnListar.addActionListener(e -> {
+        btnEliminar.addActionListener(e -> {
             try {
                 int id = Integer.parseInt(txtId.getText().trim());
                 if (gestorClientes.eliminarCliente(id)) {
                     mostrar("✅ Cliente eliminado correctamente.");
                 } else {
-                    mostrar("⚠️ Cliente no encontrado.");
+                    mostrar("Cliente no encontrado.");
                 }
                 limpiarCampos();
             } catch (Exception ex) {
-                mostrar("❌ Error al eliminar cliente: " + ex.getMessage());
+                mostrar("Error al eliminar cliente: " + ex.getMessage());
             }
         });
 
@@ -130,6 +145,6 @@ public class FormCliente extends JFrame {
     }
 
     private void createUIComponents() {
-        // Se configura automáticamente en el archivo .form
+        listaClientes = new JList<>();
     }
 }

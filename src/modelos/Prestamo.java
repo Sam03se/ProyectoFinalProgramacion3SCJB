@@ -8,7 +8,10 @@ public class Prestamo {
     private int cuotas;
     private boolean diferido;
     private double interes;
-    private boolean cuotaAvanzada; // ✅ NUEVO campo para seguimiento de pago
+    private boolean cuotaAvanzada; //
+    private String estado;
+
+
 
     public Prestamo(int id, Cliente cliente, double monto, String destino, int cuotas) {
         this.id = id;
@@ -95,4 +98,27 @@ public class Prestamo {
                 " | $" + monto +
                 " | Cuotas: " + cuotas;
     }
+    public String resumen() {
+        return "ID: " + id +
+                " | Cliente: " + cliente.getNombre() + " " + cliente.getApellido() +
+                " | Monto: $" + String.format("%.2f", monto) +
+                " | Cuotas: " + cuotas +
+                " | Interés: " + (interes * 100) + "%";
+    }
+    private int cuotasPagadas = 0;
+
+    public void pagarCuota() {
+        if (cuotasPagadas < cuotas) {
+            cuotasPagadas++;
+        }
+    }
+
+    public boolean estaPagado() {
+        return cuotasPagadas >= cuotas;
+    }
+
+    public int getCuotasPagadas() {
+        return cuotasPagadas;
+    }
+
 }

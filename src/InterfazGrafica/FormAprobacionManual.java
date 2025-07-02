@@ -46,18 +46,25 @@ public class FormAprobacionManual extends JPanel {
                 String selectedValue = modeloLista.getElementAt(index);
                 int id = extraerIdDesdeTexto(selectedValue);
 
-                if (gestorPrestamos.aprobarPrestamoPorId(id)) {
-                    Prestamo p = gestorPrestamos.buscarPorId(id);
+                Prestamo p = buscarSolicitudPorId(id);
+
+                if (p != null) {
+                    gestorPrestamos.getSolicitudesPendientes().remove(p);
+                    gestorPrestamos.agregarPrestamo(p);
+
                     String resumen = "✅ Préstamo aprobado\n"
                             + "Cliente: " + p.getCliente().getNombre() + " " + p.getCliente().getApellido() + "\n"
-                            + "Monto: $" + p.getMonto() + "\n"
+                            + "Monto: $" + String.format("%.2f", p.getMonto()) + "\n"
+                            + "Destino" +p.getDestino()+ "\n"
                             + "Cuotas: " + p.getCuotas() + "\n"
-                            + "Interés aplicado: " + (p.getInteres() * 100) + "%";
+                            + "Interés aplicado: " + (p.getInteres() * 100) + "%\n"
+                            + "Total a pagar: $" + String.format("%.2f", p.calcularTotalConInteres()) + "\n"
+                            + "Cuota mensual: $" + String.format("%.2f", p.calcularCuotaMensual());
 
                     txtResumenAprobacion.setText(resumen);
                     cargarSolicitudes();
                 } else {
-                    txtResumenAprobacion.setText("❌ No se pudo aprobar el préstamo.");
+                    txtResumenAprobacion.setText("❌ No se pudo encontrar la solicitud.");
                 }
             } else {
                 txtResumenAprobacion.setText("⚠️ Selecciona una solicitud para aprobar.");
@@ -67,7 +74,7 @@ public class FormAprobacionManual extends JPanel {
 
     private void cargarSolicitudes() {
         modeloLista.clear();
-        for (Prestamo p : gestorPrestamos.obtenerSolicitudesPendientes()) {
+        for (Prestamo p : gestorPrestamos.getSolicitudesPendientes()) {
             modeloLista.addElement("ID: " + p.getId()
                     + " | Cliente: " + p.getCliente().getNombre()
                     + " | $" + p.getMonto()
@@ -81,5 +88,14 @@ public class FormAprobacionManual extends JPanel {
         } catch (Exception e) {
             return -1;
         }
+    }
+
+    private Prestamo buscarSolicitudPorId(int id) {
+        for (Prestamo p : gestorPrestamos.getSolicitudesPendientes()) {
+            if (p.getId() == id) {
+                return p;
+            }
+        }
+        return null;
     }
 }

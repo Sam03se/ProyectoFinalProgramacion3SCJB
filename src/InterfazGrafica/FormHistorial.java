@@ -3,61 +3,52 @@ package InterfazGrafica;
 import gestores.GestorPrestamos;
 
 import javax.swing.*;
-import java.awt.event.ActionEvent;
+import java.util.List;
 
 public class FormHistorial extends JFrame {
     private JPanel panelPrincipal;
     private JTextArea txtHistorial;
-    private JButton btnActualizar;
-    private JButton btnLimpiar;
+    private JButton btnCerrar;
+
     private final GestorPrestamos gestorPrestamos;
 
     public FormHistorial(GestorPrestamos gestorPrestamos) {
         this.gestorPrestamos = gestorPrestamos;
 
-        setTitle("Historial de Operaciones");
+        setTitle("Historial de Préstamos");
         setContentPane(panelPrincipal);
-        setSize(600, 500);
+        setSize(500, 400);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         setVisible(true);
 
         txtHistorial.setEditable(false);
 
-        mostrarHistorial();
-
-        btnActualizar.addActionListener((ActionEvent e) -> mostrarHistorial());
-
-        btnLimpiar.addActionListener(e -> {
-            int confirm = JOptionPane.showConfirmDialog(this,
-                    "¿Deseas limpiar solo el historial? Esta acción no afecta los préstamos.",
-                    "Confirmación", JOptionPane.YES_NO_OPTION);
-
-            if (confirm == JOptionPane.YES_OPTION) {
-                gestorPrestamos.limpiarSoloHistorial();
-                txtHistorial.setText("🧹 Historial limpiado correctamente.");
+        List<String> historial = gestorPrestamos.getHistorialOperaciones();
+        if (historial.isEmpty()) {
+            txtHistorial.setText("No hay operaciones registradas.");
+        } else {
+            txtHistorial.append("📥 Solicitudes Registradas\n");
+            for (String linea : historial) {
+                if (linea.startsWith("📥")) txtHistorial.append("• " + linea + "\n");
             }
-        });
 
-    }
+            txtHistorial.append("\n✅ Préstamos Aprobados\n");
+            for (String linea : historial) {
+                if (linea.startsWith("✅")) txtHistorial.append("• " + linea + "\n");
+            }
 
-    private void mostrarHistorial() {
-        StringBuilder sb = new StringBuilder("📜 Historial de Operaciones\n\n");
-
-        int contador = 1;
-        for (String linea : gestorPrestamos.getHistorialOperaciones()) {
-            sb.append("[").append(contador++).append("] ").append(linea).append("\n----------------------------\n");
+            txtHistorial.append("\n💵 Pagos Registrados\n");
+            for (String linea : historial) {
+                if (linea.startsWith("💵")) txtHistorial.append("• " + linea + "\n");
+            }
         }
 
-        if (contador == 1) {
-            sb.append("Sin operaciones registradas.");
-        }
 
-        txtHistorial.setText(sb.toString());
-        txtHistorial.setCaretPosition(txtHistorial.getText().length()); // scroll abajo
+        btnCerrar.addActionListener(e -> dispose());
     }
 
-    private void createUIComponents() {
-        // TODO: place custom component creation code here
+    public JPanel getPanel() {
+        return panelPrincipal;
     }
 }

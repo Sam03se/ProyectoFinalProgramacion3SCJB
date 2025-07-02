@@ -30,25 +30,38 @@ public class FormCertificados extends JFrame {
     }
 
     private void mostrarCertificados() {
-        StringBuilder sb = new StringBuilder("📄 Certificados de préstamos:\n\n");
+        StringBuilder sb = new StringBuilder("📄 CERTIFICADOS DE PRÉSTAMOS\n\n");
+
         List<Prestamo> lista = gestorPrestamos.obtenerPrestamosAprobados();
+
         if (lista.isEmpty()) {
             sb.append("No hay préstamos aprobados.");
         } else {
+            sb.append("🔵 ACTIVOS:\n");
             for (Prestamo p : lista) {
-                Cliente c = p.getCliente();
-                sb.append("Cliente: ").append(c.getNombre()).append(" ").append(c.getApellido()).append("\n")
-                        .append("Monto aprobado: $").append(String.format("%.2f", p.getMonto())).append("\n")
-                        .append("Cuotas: ").append(p.getCuotas()).append(" | Interés: ")
-                        .append(String.format("%.2f", p.getInteres() * 100)).append("%\n")
-                        .append("Total a pagar: $").append(String.format("%.2f", p.calcularTotalConInteres())).append("\n")
-                        .append("----------------------------------------\n");
+                if (!p.estaPagado()) {
+                    sb.append(certificadoTexto(p)).append("\n");
+                }
+            }
+
+            sb.append("\n🟢 COMPLETAMENTE PAGADOS:\n");
+            for (Prestamo p : lista) {
+                if (p.estaPagado()) {
+                    sb.append(certificadoTexto(p)).append("\n");
+                }
             }
         }
+
         txtCertificados.setText(sb.toString());
     }
 
-    private void createUIComponents() {
-        // si usas .form, deja esto vacío
+    private String certificadoTexto(Prestamo p) {
+        Cliente c = p.getCliente();
+        return "Cliente: " + c.getNombre() + " " + c.getApellido() + "\n"
+                + "Monto aprobado: $" + String.format("%.2f", p.getMonto()) + "\n"
+                + "Cuotas: " + p.getCuotas() + " | Pagadas: " + p.getCuotasPagadas() + "\n"
+                + "Interés: " + String.format("%.2f", p.getInteres() * 100) + "%\n"
+                + "Total a pagar: $" + String.format("%.2f", p.calcularTotalConInteres()) + "\n"
+                + "----------------------------------------";
     }
 }

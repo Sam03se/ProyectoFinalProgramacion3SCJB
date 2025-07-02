@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="InterfazGrafica.FormMenuPrincipal">
-  <grid id="27dc6" binding="panelPrincipal" layout-manager="GridLayoutManager" row-count="9" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+  <grid id="27dc6" binding="panelPrincipal" layout-manager="GridLayoutManager" row-count="10" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
     <margin top="0" left="0" bottom="0" right="0"/>
     <constraints>
       <xy x="20" y="20" width="500" height="400"/>
@@ -24,7 +24,7 @@
           <text value="Solicitar Prestamo"/>
         </properties>
       </component>
-      <component id="46de2" class="javax.swing.JButton" binding="btnAprobarPrestamo">
+      <component id="46de2" class="javax.swing.JButton" binding="btnAprobarPrestamos">
         <constraints>
           <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
         </constraints>
@@ -32,7 +32,7 @@
           <text value="Aprobar Prestamo"/>
         </properties>
       </component>
-      <component id="2ef06" class="javax.swing.JButton" binding="btnVerHistorial">
+      <component id="2ef06" class="javax.swing.JButton" binding="btnHistorial">
         <constraints>
           <grid row="3" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
         </constraints>
@@ -42,7 +42,7 @@
       </component>
       <component id="bbed9" class="javax.swing.JButton" binding="btnVerCertificados">
         <constraints>
-          <grid row="7" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+          <grid row="8" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties>
           <text value="Ver Certificados"/>
@@ -58,7 +58,7 @@
       </component>
       <component id="9d808" class="javax.swing.JButton" binding="btnSimularPagoCuenta">
         <constraints>
-          <grid row="5" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+          <grid row="6" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties>
           <text value="Pago a Cuenta"/>
@@ -66,18 +66,26 @@
       </component>
       <component id="4d77e" class="javax.swing.JButton" binding="btnExportarResumenPrestamo">
         <constraints>
-          <grid row="8" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+          <grid row="9" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties>
-          <text value="Exportar Resumen"/>
+          <text value="Exportar Certificados"/>
         </properties>
       </component>
       <component id="df4a5" class="javax.swing.JButton" binding="btnAsociarCuenta">
         <constraints>
-          <grid row="6" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+          <grid row="5" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties>
           <text value="Asociar Cuenta Bancaria"/>
+        </properties>
+      </component>
+      <component id="7f4ac" class="javax.swing.JButton" binding="btnVerClientes">
+        <constraints>
+          <grid row="7" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <text value="Ver Clientes"/>
         </properties>
       </component>
     </children>

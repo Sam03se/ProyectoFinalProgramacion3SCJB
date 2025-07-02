@@ -1,90 +1,101 @@
 package InterfazGrafica;
 
-import gestores.GestorClientes;
 import gestores.GestorPrestamos;
-import modelos.Cliente;
 import modelos.Prestamo;
 
 import javax.swing.*;
+import java.awt.*;
 import java.io.FileWriter;
 import java.io.IOException;
 
 public class FormExportarResumenPrestamo extends JFrame {
-    private JPanel panelPrincipal;
-    private JTextField txtIdCliente;
+    private final GestorPrestamos gestorPrestamos;
+    private JComboBox<Prestamo> cmbPrestamos;
     private JTextArea txtResumen;
-    private JButton btnGenerar;
+    private JRadioButton rAprobado;
+    private JRadioButton rPagado;
     private JButton btnExportar;
 
-    private final GestorPrestamos gestorPrestamos;
-    private final GestorClientes gestorClientes;
-
-    public FormExportarResumenPrestamo(GestorPrestamos gestorPrestamos, GestorClientes gestorClientes) {
+    public FormExportarResumenPrestamo(GestorPrestamos gestorPrestamos) {
         this.gestorPrestamos = gestorPrestamos;
-        this.gestorClientes = gestorClientes;
 
-        setTitle("Exportar Resumen de Préstamo");
-        setContentPane(panelPrincipal);
-        setSize(500, 350);
+        setTitle("Exportar Certificado de Préstamo");
+        setSize(600, 450);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+
+        JPanel panelPrincipal = new JPanel(new BorderLayout());
+
+        // Panel superior de selección
+        JPanel panelFiltro = new JPanel(new FlowLayout());
+
+        cmbPrestamos = new JComboBox<>();
+        for (Prestamo p : gestorPrestamos.obtenerPrestamosAprobados()) {
+            cmbPrestamos.addItem(p);
+        }
+
+        rAprobado = new JRadioButton("Aprobado", true);
+        rPagado = new JRadioButton("Pagado");
+        ButtonGroup grupo = new ButtonGroup();
+        grupo.add(rAprobado);
+        grupo.add(rPagado);
+
+        panelFiltro.add(new JLabel("Préstamo:"));
+        panelFiltro.add(cmbPrestamos);
+        panelFiltro.add(rAprobado);
+        panelFiltro.add(rPagado);
+
+        panelPrincipal.add(panelFiltro, BorderLayout.NORTH);
+
+        // Área de resumen
+        txtResumen = new JTextArea();
+        txtResumen.setEditable(false);
+        JScrollPane scrollResumen = new JScrollPane(txtResumen);
+        panelPrincipal.add(scrollResumen, BorderLayout.CENTER);
+
+        // Botón de exportar
+        btnExportar = new JButton("Exportar como .txt");
+        panelPrincipal.add(btnExportar, BorderLayout.SOUTH);
+
+        setContentPane(panelPrincipal);
         setVisible(true);
 
-        btnGenerar.addActionListener(e -> mostrarResumen());
         btnExportar.addActionListener(e -> exportarResumen());
     }
 
-    private void mostrarResumen() {
-        try {
-            int id = Integer.parseInt(txtIdCliente.getText().trim());
-            Cliente c = gestorClientes.buscarPorId(id);
-            if (c == null) {
-                txtResumen.setText("❌ Cliente no encontrado.");
-                return;
-            }
-
-            Prestamo p = gestorPrestamos.buscarPrestamoAprobadoPorCliente(c);
-            if (p == null) {
-                txtResumen.setText("⚠️ No hay préstamo aprobado.");
-                return;
-            }
-
-            String resumen = "📄 COMPROBANTE DE PRÉSTAMO\n"
-                    + "Cliente: " + c.getNombre() + " " + c.getApellido() + "\n"
-                    + "Cédula: " + c.getCedula() + "\n"
-                    + "Monto aprobado: $" + String.format("%.2f", p.getMonto()) + "\n"
-                    + "Cuotas: " + p.getCuotas() + "\n"
-                    + "Interés: " + (p.getInteres() * 100) + "%\n"
-                    + "Cuenta bancaria: " + (c.getCuentaBancaria() != null ? c.getCuentaBancaria() : "No registrada") + "\n"
-                    + "Total a pagar: $" + String.format("%.2f", p.calcularTotalConInteres());
-
-            txtResumen.setText(resumen);
-
-        } catch (Exception ex) {
-            txtResumen.setText("❌ Error: " + ex.getMessage());
-        }
-    }
-
     private void exportarResumen() {
-        String contenido = txtResumen.getText();
-        if (contenido.isEmpty() || contenido.startsWith("❌") || contenido.startsWith("⚠️")) {
-            JOptionPane.showMessageDialog(this, "⚠️ No hay resumen válido para exportar.");
+        Prestamo p = (Prestamo) cmbPrestamos.getSelectedItem();
+        if (p == null) return;
+
+        boolean esAprobado = rAprobado.isSelected();
+        boolean esPagado = p.estaPagado();
+
+        if ((esAprobado && esPagado) || (!esAprobado && !esPagado)) {
+            JOptionPane.showMessageDialog(this, "⚠️ El tipo de certificado no coincide con el estado del préstamo.");
             return;
         }
 
-        try {
-            JFileChooser fileChooser = new JFileChooser();
-            fileChooser.setDialogTitle("Guardar resumen");
-            int resultado = fileChooser.showSaveDialog(this);
+        String resumen = generarCertificadoTexto(p);
+        txtResumen.setText(resumen);
 
-            if (resultado == JFileChooser.APPROVE_OPTION) {
-                FileWriter fw = new FileWriter(fileChooser.getSelectedFile() + ".txt");
-                fw.write(contenido);
-                fw.close();
-                JOptionPane.showMessageDialog(this, "✅ Resumen exportado exitosamente.");
-            }
-        } catch (IOException e) {
-            JOptionPane.showMessageDialog(this, "❌ Error al guardar: " + e.getMessage());
+        try {
+            FileWriter fw = new FileWriter("certificado_prestamo.txt");
+            fw.write(resumen);
+            fw.close();
+            JOptionPane.showMessageDialog(this, "✅ Certificado exportado correctamente.");
+        } catch (IOException ex) {
+            JOptionPane.showMessageDialog(this, "❌ Error al exportar: " + ex.getMessage());
         }
+    }
+
+    private String generarCertificadoTexto(Prestamo p) {
+        return "📄 CERTIFICADO DE PRÉSTAMO\n\n" +
+                "Cliente: " + p.getCliente().getNombre() + " " + p.getCliente().getApellido() + "\n" +
+                "Destino: " + p.getDestino() + "\n" +
+                "Monto: $" + String.format("%.2f", p.getMonto()) + "\n" +
+                "Cuotas: " + p.getCuotasPagadas() + " de " + p.getCuotas() + "\n" +
+                "Interés: " + String.format("%.2f", p.getInteres() * 100) + "%\n" +
+                "Total a pagar: $" + String.format("%.2f", p.calcularTotalConInteres()) + "\n" +
+                (p.estaPagado() ? "📌 Estado: COMPLETAMENTE PAGADO" : "📌 Estado: EN CURSO") + "\n";
     }
 }

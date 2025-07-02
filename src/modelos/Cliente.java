@@ -16,11 +16,13 @@ public class Cliente {
     public Cliente(int id, String nombre, String apellido, String cedula, String correo, int edad, String zona, double ingresoMensual, int antiguedadLaboral) {
         if (id <= 0) throw new IllegalArgumentException("ID debe ser positivo.");
         if (nombre == null || nombre.isEmpty()) throw new IllegalArgumentException("Nombre no puede estar vacío.");
-        if (apellido == null || apellido.isEmpty()) throw new IllegalArgumentException("Apellido no puede estar vacío.");
+        if (apellido == null || apellido.isEmpty())
+            throw new IllegalArgumentException("Apellido no puede estar vacío.");
         if (!correo.contains("@")) throw new IllegalArgumentException("Correo inválido.");
         if (cedula == null || cedula.length() != 10) throw new IllegalArgumentException("Cédula inválida.");
         if (edad < 18 || edad > 100) throw new IllegalArgumentException("Edad no válida.");
-        if (!zona.equalsIgnoreCase("urbana") && !zona.equalsIgnoreCase("rural")) throw new IllegalArgumentException("Zona inválida.");
+        if (!zona.equalsIgnoreCase("urbana") && !zona.equalsIgnoreCase("rural"))
+            throw new IllegalArgumentException("Zona inválida.");
         if (ingresoMensual < 0) throw new IllegalArgumentException("Ingreso mensual no puede ser negativo.");
         if (antiguedadLaboral < 0) throw new IllegalArgumentException("Antigüedad inválida.");
 
@@ -37,16 +39,45 @@ public class Cliente {
     }
 
     // Getters
-    public int getId() { return id; }
-    public String getNombre() { return nombre; }
-    public String getApellido() { return apellido; }
-    public String getCedula() { return cedula; }
-    public String getCorreo() { return correo; }
-    public int getEdad() { return edad; }
-    public String getZona() { return zona; }
-    public double getIngresoMensual() { return ingresoMensual; }
-    public int getAntiguedadLaboral() { return antiguedadLaboral; }
-    public String getCuentaBancaria() { return cuentaBancaria; }
+    public int getId() {
+        return id;
+    }
+
+    public String getNombre() {
+        return nombre;
+    }
+
+    public String getApellido() {
+        return apellido;
+    }
+
+    public String getCedula() {
+        return cedula;
+    }
+
+    public String getCorreo() {
+        return correo;
+    }
+
+    public int getEdad() {
+        return edad;
+    }
+
+    public String getZona() {
+        return zona;
+    }
+
+    public double getIngresoMensual() {
+        return ingresoMensual;
+    }
+
+    public int getAntiguedadLaboral() {
+        return antiguedadLaboral;
+    }
+
+    public String getCuentaBancaria() {
+        return cuentaBancaria;
+    }
 
     // Setters
     public void setNombre(String nombre) {
@@ -70,7 +101,8 @@ public class Cliente {
     }
 
     public void setZona(String zona) {
-        if (!zona.equalsIgnoreCase("urbana") && !zona.equalsIgnoreCase("rural")) throw new IllegalArgumentException("Zona inválida.");
+        if (!zona.equalsIgnoreCase("urbana") && !zona.equalsIgnoreCase("rural"))
+            throw new IllegalArgumentException("Zona inválida.");
         this.zona = zona.toLowerCase();
     }
 
@@ -97,6 +129,6 @@ public class Cliente {
 
     @Override
     public String toString() {
-        return id + " - " + nombre + " " + apellido + " | " + correo;
+        return nombre + " " + apellido + " | ID: " + id;
     }
 }
