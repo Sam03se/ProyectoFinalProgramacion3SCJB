@@ -91,5 +91,14 @@ public class GestorPrestamos {
         }
         return lista;
     }
+        public Prestamo buscarPrestamoAprobadoPorCliente(Cliente cliente) {
+            for (Prestamo p : prestamos) {
+                if (p.getCliente().getId() == cliente.getId() && p.getInteres() > 0) {
+                    return p;
+                }
+            }
+            return null;
+        }
+
 }
 
