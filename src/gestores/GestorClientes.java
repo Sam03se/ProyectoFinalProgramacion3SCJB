@@ -8,13 +8,14 @@ import java.util.List;
 public class GestorClientes {
     private final List<Cliente> listaClientes = new ArrayList<>();
 
-    // Agregar cliente si no existe
     public boolean agregarCliente(Cliente cliente) {
-        if (buscarPorId(cliente.getId()) == null) {
-            listaClientes.add(cliente);
-            return true;
+        for (Cliente c : listaClientes) {
+            if (c.getId() == cliente.getId() || c.getCedula().equals(cliente.getCedula())) {
+                return false; // Cliente ya existe por ID o cédula
+            }
         }
-        return false;
+        listaClientes.add(cliente);
+        return true;
     }
 
     // Editar cliente existente

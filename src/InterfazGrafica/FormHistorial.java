@@ -17,35 +17,31 @@ public class FormHistorial extends JFrame {
 
         setTitle("Historial de Préstamos");
         setContentPane(panelPrincipal);
-        setSize(500, 400);
+        setSize(500, 500);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
-        setVisible(true);
 
         txtHistorial.setEditable(false);
 
+        mostrarHistorial();
+
+        btnCerrar.addActionListener(e -> dispose());
+
+        setVisible(true);
+    }
+
+    private void mostrarHistorial() {
         List<String> historial = gestorPrestamos.getHistorialOperaciones();
+
         if (historial.isEmpty()) {
             txtHistorial.setText("No hay operaciones registradas.");
         } else {
-            txtHistorial.append("📥 Solicitudes Registradas\n");
+            StringBuilder sb = new StringBuilder("🧾 HISTORIAL DE OPERACIONES\n\n");
             for (String linea : historial) {
-                if (linea.startsWith("📥")) txtHistorial.append("• " + linea + "\n");
+                sb.append("• ").append(linea).append("\n");
             }
-
-            txtHistorial.append("\n✅ Préstamos Aprobados\n");
-            for (String linea : historial) {
-                if (linea.startsWith("✅")) txtHistorial.append("• " + linea + "\n");
-            }
-
-            txtHistorial.append("\n💵 Pagos Registrados\n");
-            for (String linea : historial) {
-                if (linea.startsWith("💵")) txtHistorial.append("• " + linea + "\n");
-            }
+            txtHistorial.setText(sb.toString());
         }
-
-
-        btnCerrar.addActionListener(e -> dispose());
     }
 
     public JPanel getPanel() {

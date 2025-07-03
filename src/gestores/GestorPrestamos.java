@@ -8,10 +8,25 @@ import java.util.*;
 public class GestorPrestamos {
     private final List<Prestamo> prestamos;
     private final List<String> historialOperaciones;
+    private final List<Prestamo> solicitudesPendientes;
+    private final Map<Integer, String> motivosRechazo;
+    private final Map<Prestamo, String> prestamosRechazados;
 
     public GestorPrestamos() {
         prestamos = new ArrayList<>();
         historialOperaciones = new ArrayList<>();
+        solicitudesPendientes = new ArrayList<>();
+        motivosRechazo = new HashMap<>();
+        prestamosRechazados = new HashMap<>();
+    }
+
+    // ✅ Permite obtener las solicitudes pendientes
+    public List<Prestamo> getSolicitudesPendientes() {
+        return solicitudesPendientes;
+    }
+
+    public void agregarSolicitudPendiente(Prestamo prestamo) {
+        solicitudesPendientes.add(prestamo);
     }
 
     public boolean agregarPrestamo(Prestamo p) {
@@ -25,7 +40,73 @@ public class GestorPrestamos {
         for (Prestamo p : prestamos) {
             if (p.getId() == id) return p;
         }
+        for (Prestamo p : solicitudesPendientes) {
+            if (p.getId() == id) return p;
+        }
         return null;
+    }
+
+    public boolean aprobarPrestamoPorId(int id) {
+        Prestamo p = buscarPorId(id);
+        if (p != null && solicitudesPendientes.contains(p)) {
+            solicitudesPendientes.remove(p);
+            double interes = (p.getCuotas() <= 6) ? 0.05 : 0.10;
+            p.setInteres(interes);
+            prestamos.add(p);
+            historialOperaciones.add("✅ Aprobado manualmente: ID: " + p.getId() + " | Interés: " + (interes * 100) + "%");
+            return true;
+        }
+        return false;
+    }
+
+    public boolean rechazarPrestamoPorId(int id, String motivo) {
+        Prestamo p = buscarPorId(id);
+        if (p != null && solicitudesPendientes.contains(p)) {
+            solicitudesPendientes.remove(p);
+            motivosRechazo.put(id, motivo);
+            prestamosRechazados.put(p, motivo);
+            historialOperaciones.add("❌ Rechazado: ID " + id + " | Cliente: " + p.getCliente().getNombre() + " | Motivo: " + motivo);
+            return true;
+        }
+        return false;
+    }
+
+    public void agregarPrestamoRechazado(Prestamo prestamo, String razon) {
+        prestamosRechazados.put(prestamo, razon);
+        historialOperaciones.add("❌ Rechazado préstamo ID " + prestamo.getId()
+                + " de " + prestamo.getCliente().getNombre()
+                + " | Motivo: " + razon);
+    }
+
+    public Map<Prestamo, String> getPrestamosRechazados() {
+        return prestamosRechazados;
+    }
+
+    public String obtenerMotivoRechazo(int id) {
+        return motivosRechazo.getOrDefault(id, "No registrado");
+    }
+
+    public int generarNuevoId() {
+        int maxId = 0;
+        for (Prestamo p : prestamos) {
+            if (p.getId() > maxId) maxId = p.getId();
+        }
+        for (Prestamo p : solicitudesPendientes) {
+            if (p.getId() > maxId) maxId = p.getId();
+        }
+        return maxId + 1;
+    }
+
+    public boolean asociarCuentaBancariaACliente(int idPrestamo, String cuenta) {
+        Prestamo p = buscarPorId(idPrestamo);
+        if (p == null) return false;
+        try {
+            p.getCliente().setCuentaBancaria(cuenta);
+            historialOperaciones.add("💳 Cuenta asociada al préstamo ID: " + p.getId() + " → Cuenta: " + cuenta);
+            return true;
+        } catch (IllegalArgumentException ex) {
+            return false;
+        }
     }
 
     public List<Prestamo> listarPrestamos() {
@@ -42,16 +123,6 @@ public class GestorPrestamos {
         return false;
     }
 
-    public List<Prestamo> obtenerSolicitudesPendientes() {
-        List<Prestamo> pendientes = new ArrayList<>();
-        for (Prestamo p : prestamos) {
-            if (p.getInteres() == 0.0) {
-                pendientes.add(p);
-            }
-        }
-        return pendientes;
-    }
-
     public List<Prestamo> obtenerPrestamosAprobados() {
         List<Prestamo> aprobados = new ArrayList<>();
         for (Prestamo p : prestamos) {
@@ -62,25 +133,6 @@ public class GestorPrestamos {
         return aprobados;
     }
 
-    public boolean aprobarPrestamoPorId(int id) {
-        Prestamo p = buscarPorId(id);
-        if (p != null && p.getInteres() == 0.0) {
-            double interes = (p.getCuotas() <= 6) ? 0.05 : 0.10;
-            p.setInteres(interes);
-            historialOperaciones.add("✅ Aprobado manualmente: ID: " + p.getId() + " | Interés: " + (interes * 100) + "%");
-            return true;
-        }
-        return false;
-    }
-
-    public boolean solicitarPrestamo(Cliente cliente, double monto, String destino, int cuotas) {
-        int id = prestamos.size() + 1;
-        Prestamo p = new Prestamo(id, cliente, monto, destino, cuotas);
-        p.setInteres(0.0);  // aún no aprobado
-        p.setDiferido(cuotas > 1);
-        return agregarPrestamo(p);
-    }
-
     public List<Prestamo> obtenerPrestamosPendientesDeCuenta() {
         List<Prestamo> sinCuenta = new ArrayList<>();
         for (Prestamo p : obtenerPrestamosAprobados()) {
@@ -89,18 +141,6 @@ public class GestorPrestamos {
             }
         }
         return sinCuenta;
-    }
-
-    public boolean asociarCuentaBancariaACliente(int idPrestamo, String cuenta) {
-        Prestamo p = buscarPorId(idPrestamo);
-        if (p == null) return false;
-        try {
-            p.getCliente().setCuentaBancaria(cuenta);
-            historialOperaciones.add("💳 Cuenta asociada al préstamo ID: " + p.getId() + " → Cuenta: " + cuenta);
-            return true;
-        } catch (IllegalArgumentException ex) {
-            return false;
-        }
     }
 
     public List<Prestamo> prestamosPorCliente(int idCliente) {
@@ -165,31 +205,10 @@ public class GestorPrestamos {
             }
         });
 
-        for (Prestamo p : obtenerSolicitudesPendientes()) {
+        for (Prestamo p : solicitudesPendientes) {
             cola.offer(p);
         }
 
         return cola;
     }
-    private final List<Prestamo> solicitudesPendientes = new ArrayList<>();
-
-    public void agregarSolicitudPendiente(Prestamo prestamo) {
-        solicitudesPendientes.add(prestamo);
-    }
-
-    public List<Prestamo> getSolicitudesPendientes() {
-        return solicitudesPendientes;
-    }
-    public int generarNuevoId() {
-        int maxId = 0;
-        for (Prestamo p : prestamos) {
-            if (p.getId() > maxId) maxId = p.getId();
-        }
-        for (Prestamo p : solicitudesPendientes) {
-            if (p.getId() > maxId) maxId = p.getId();
-        }
-        return maxId + 1;
-    }
-
-
 }

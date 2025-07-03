@@ -37,34 +37,47 @@ public class FormAsociarCuentaBancaria extends JFrame {
     private void asociarCuenta() {
         try {
             int id = Integer.parseInt(txtIdCliente.getText().trim());
-            Cliente c = gestorClientes.buscarPorId(id);
-            if (c == null) {
-                mostrar("Cliente no encontrado.");
+            Cliente cliente = gestorClientes.buscarPorId(id);
+
+            if (cliente == null) {
+                mostrar("❌ Cliente no encontrado.");
                 return;
             }
 
-            Prestamo p = gestorPrestamos.buscarPrestamoAprobadoPorCliente(c);
-            if (p == null) {
-                mostrar("Cliente no tiene préstamo aprobado.");
+            Prestamo prestamo = gestorPrestamos.buscarPrestamoAprobadoPorCliente(cliente);
+            if (prestamo == null) {
+                mostrar("❌ Este cliente no tiene un préstamo aprobado.");
                 return;
             }
 
             String cuenta = txtCuenta.getText().trim();
-            if (cuenta.length() != 10 || !cuenta.matches("\\d+")) {
-                mostrar("La cuenta bancaria debe tener 10 dígitos.");
+            if (!cuenta.matches("\\d{10}")) {
+                mostrar("⚠️ La cuenta bancaria debe tener exactamente 10 dígitos numéricos.");
                 return;
             }
 
-            if (gestorPrestamos.asociarCuentaBancariaACliente(p.getId(), cuenta)) {
-                mostrar("Cuenta asociada correctamente.");
-                txtResumen.setText("Cliente: " + c.getNombre() + " " + c.getApellido() + "\n" +
-                        "Cuenta asociada: " + cuenta + "\n" +
-                        "Monto aprobado: $" + p.getMonto());
-            } else {
-                mostrar("No se pudo asociar la cuenta.");
+            if (cliente.tieneCuentaBancaria()) {
+                mostrar("⚠️ Este cliente ya tiene una cuenta bancaria asociada: " + cliente.getCuentaBancaria());
+                return;
             }
+
+            boolean asociado = gestorPrestamos.asociarCuentaBancariaACliente(prestamo.getId(), cuenta);
+            if (asociado) {
+                txtResumen.setText("✅ Cuenta asociada correctamente\n\n" +
+                        "Cliente: " + cliente.getNombre() + " " + cliente.getApellido() + "\n" +
+                        "Cuenta: " + cuenta + "\n" +
+                        "Monto aprobado: $" + String.format("%.2f", prestamo.getMonto()) + "\n" +
+                        "Cuotas: " + prestamo.getCuotas() + "\n" +
+                        "Estado: Aprobado");
+                mostrar("✅ Cuenta bancaria asociada con éxito.");
+            } else {
+                mostrar("❌ No se pudo asociar la cuenta bancaria.");
+            }
+
+        } catch (NumberFormatException ex) {
+            mostrar("⚠️ ID inválido. Ingresa solo números.");
         } catch (Exception ex) {
-            mostrar("Error: " + ex.getMessage());
+            mostrar("⚠️ Error: " + ex.getMessage());
         }
     }
 
@@ -73,6 +86,6 @@ public class FormAsociarCuentaBancaria extends JFrame {
     }
 
     private void createUIComponents() {
-        // Se diseña en el .form
+        // Diseñado en el archivo .form
     }
 }

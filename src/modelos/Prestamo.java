@@ -8,10 +8,9 @@ public class Prestamo {
     private int cuotas;
     private boolean diferido;
     private double interes;
-    private boolean cuotaAvanzada; //
+    private boolean cuotaAvanzada;
+    private int cuotasPagadas = 0;
     private String estado;
-
-
 
     public Prestamo(int id, Cliente cliente, double monto, String destino, int cuotas) {
         this.id = id;
@@ -21,7 +20,8 @@ public class Prestamo {
         this.cuotas = cuotas;
         this.diferido = false;
         this.interes = 0.0;
-        this.cuotaAvanzada = false; // por defecto, aún no se ha pagado nada
+        this.cuotaAvanzada = false;
+        this.estado = "Activo";
     }
 
     // --- Getters y Setters ---
@@ -41,6 +41,16 @@ public class Prestamo {
         return destino;
     }
 
+    public int getCuotasPagadas() {
+        return cuotasPagadas;
+    }
+
+    public void incrementarCuotasPagadas() {
+        if (cuotasPagadas < cuotas) {
+            cuotasPagadas++;
+        }
+    }
+
     public int getCuotas() {
         return cuotas;
     }
@@ -51,6 +61,10 @@ public class Prestamo {
 
     public double getInteres() {
         return interes;
+    }
+
+    public void reiniciarCuotasPagadas() {
+        cuotasPagadas = 0;
     }
 
     public boolean getCuotaAvanzada() {
@@ -81,6 +95,14 @@ public class Prestamo {
         this.cuotaAvanzada = cuotaAvanzada;
     }
 
+    public String getEstado() {
+        return estado;
+    }
+
+    public void setEstado(String estado) {
+        this.estado = estado;
+    }
+
     // --- Métodos de cálculo ---
     public double calcularTotalConInteres() {
         return monto + (monto * interes);
@@ -91,6 +113,25 @@ public class Prestamo {
         return calcularTotalConInteres() / cuotas;
     }
 
+    public void pagarCuota() {
+        if (cuotasPagadas < cuotas) {
+            cuotasPagadas++;
+        }
+    }
+
+    // ✅ Alias compatible
+    public void registrarPago() {
+        pagarCuota();
+    }
+
+    public boolean estaPagado() {
+        return cuotasPagadas >= cuotas;
+    }
+
+    public boolean estaPagadoCompletamente() {
+        return estaPagado();
+    }
+
     @Override
     public String toString() {
         return "Préstamo ID: " + id +
@@ -98,6 +139,7 @@ public class Prestamo {
                 " | $" + monto +
                 " | Cuotas: " + cuotas;
     }
+
     public String resumen() {
         return "ID: " + id +
                 " | Cliente: " + cliente.getNombre() + " " + cliente.getApellido() +
@@ -105,20 +147,4 @@ public class Prestamo {
                 " | Cuotas: " + cuotas +
                 " | Interés: " + (interes * 100) + "%";
     }
-    private int cuotasPagadas = 0;
-
-    public void pagarCuota() {
-        if (cuotasPagadas < cuotas) {
-            cuotasPagadas++;
-        }
-    }
-
-    public boolean estaPagado() {
-        return cuotasPagadas >= cuotas;
-    }
-
-    public int getCuotasPagadas() {
-        return cuotasPagadas;
-    }
-
 }

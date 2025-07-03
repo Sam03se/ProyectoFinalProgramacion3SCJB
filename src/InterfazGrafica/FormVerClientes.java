@@ -27,26 +27,20 @@ public class FormVerClientes extends JFrame {
 
         panelPrincipal = new JPanel(new BorderLayout());
 
-        String[] columnas = {"ID", "Nombre", "¿Solicitó?", "Cuotas Pagadas", "Total Cuotas", "Estado Deuda"};
+        String[] columnas = {"ID", "Nombre", "¿Solicitó Préstamo?", "Cuotas Pagadas", "Total Cuotas", "Estado Deuda"};
         modeloTabla = new DefaultTableModel(columnas, 0);
         tablaClientes = new JTable(modeloTabla);
+
         JScrollPane scroll = new JScrollPane(tablaClientes);
-
         panelPrincipal.add(scroll, BorderLayout.CENTER);
-
-        JButton btnVerDetalle = new JButton("Ver Detalle del Cliente");
-        panelPrincipal.add(btnVerDetalle, BorderLayout.SOUTH);
-
         setContentPane(panelPrincipal);
         setVisible(true);
 
         cargarDatos();
-
-        btnVerDetalle.addActionListener(e -> mostrarDetalleCliente());
     }
 
     private void cargarDatos() {
-        modeloTabla.setRowCount(0); // limpiar
+        modeloTabla.setRowCount(0); // Limpiar tabla
 
         for (Cliente c : gestorClientes.listarClientes()) {
             Prestamo p = gestorPrestamos.buscarPrestamoAprobadoPorCliente(c);
@@ -54,7 +48,7 @@ public class FormVerClientes extends JFrame {
                 modeloTabla.addRow(new Object[]{
                         c.getId(),
                         c.getNombre() + " " + c.getApellido(),
-                        "❌ No",
+                        "No",
                         "-", "-", "Sin préstamo"
                 });
             } else {
@@ -63,39 +57,12 @@ public class FormVerClientes extends JFrame {
                 modeloTabla.addRow(new Object[]{
                         c.getId(),
                         c.getNombre() + " " + c.getApellido(),
-                        "✅ Sí",
+                        "Sí",
                         p.getCuotasPagadas(),
                         p.getCuotas(),
                         estado
                 });
             }
         }
-    }
-
-    private void mostrarDetalleCliente() {
-        int fila = tablaClientes.getSelectedRow();
-        if (fila < 0) {
-            JOptionPane.showMessageDialog(this, "Selecciona un cliente de la tabla.");
-            return;
-        }
-
-        int idCliente = (int) modeloTabla.getValueAt(fila, 0);
-        Cliente cliente = gestorClientes.buscarPorId(idCliente);
-        Prestamo prestamo = gestorPrestamos.buscarPrestamoAprobadoPorCliente(cliente);
-
-        StringBuilder sb = new StringBuilder();
-        sb.append("Cliente: ").append(cliente.getNombre()).append(" ").append(cliente.getApellido()).append("\n");
-        if (prestamo != null) {
-            sb.append("Destino: ").append(prestamo.getDestino()).append("\n")
-                    .append("Monto: $").append(prestamo.getMonto()).append("\n")
-                    .append("Cuotas: ").append(prestamo.getCuotas()).append("\n")
-                    .append("Pagadas: ").append(prestamo.getCuotasPagadas()).append("\n")
-                    .append("Interés: ").append(prestamo.getInteres() * 100).append("%\n")
-                    .append("Total a pagar: $").append(prestamo.calcularTotalConInteres()).append("\n");
-        } else {
-            sb.append("No tiene préstamo aprobado.");
-        }
-
-        JOptionPane.showMessageDialog(this, sb.toString(), "Detalle del Cliente", JOptionPane.INFORMATION_MESSAGE);
     }
 }

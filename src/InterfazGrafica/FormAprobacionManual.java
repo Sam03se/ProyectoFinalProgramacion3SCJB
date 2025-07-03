@@ -9,6 +9,7 @@ import java.awt.event.ActionEvent;
 public class FormAprobacionManual extends JPanel {
     private JList<String> listaSolicitudes;
     private JButton btnAprobarSeleccionado;
+    private JButton btnRechazarSeleccionado;
     private JTextArea txtResumenAprobacion;
     private JPanel FormAprobacionManual;
     private DefaultListModel<String> modeloLista;
@@ -32,6 +33,10 @@ public class FormAprobacionManual extends JPanel {
         btnAprobarSeleccionado.setBounds(20, 200, 200, 30);
         add(btnAprobarSeleccionado);
 
+        btnRechazarSeleccionado = new JButton("Rechazar Seleccionado");
+        btnRechazarSeleccionado.setBounds(230, 200, 200, 30);
+        add(btnRechazarSeleccionado);
+
         txtResumenAprobacion = new JTextArea();
         txtResumenAprobacion.setEditable(false);
         JScrollPane scrollResumen = new JScrollPane(txtResumenAprobacion);
@@ -40,36 +45,73 @@ public class FormAprobacionManual extends JPanel {
 
         cargarSolicitudes();
 
-        btnAprobarSeleccionado.addActionListener((ActionEvent e) -> {
-            int index = listaSolicitudes.getSelectedIndex();
-            if (index >= 0) {
-                String selectedValue = modeloLista.getElementAt(index);
-                int id = extraerIdDesdeTexto(selectedValue);
+        btnAprobarSeleccionado.addActionListener((ActionEvent e) -> aprobarSolicitud());
+        btnRechazarSeleccionado.addActionListener((ActionEvent e) -> rechazarSolicitud());
+    }
 
-                Prestamo p = buscarSolicitudPorId(id);
+    private void aprobarSolicitud() {
+        int index = listaSolicitudes.getSelectedIndex();
+        if (index >= 0) {
+            String selectedValue = modeloLista.getElementAt(index);
+            int id = extraerIdDesdeTexto(selectedValue);
 
-                if (p != null) {
-                    gestorPrestamos.getSolicitudesPendientes().remove(p);
-                    gestorPrestamos.agregarPrestamo(p);
+            Prestamo p = buscarSolicitudPorId(id);
 
-                    String resumen = "✅ Préstamo aprobado\n"
-                            + "Cliente: " + p.getCliente().getNombre() + " " + p.getCliente().getApellido() + "\n"
-                            + "Monto: $" + String.format("%.2f", p.getMonto()) + "\n"
-                            + "Destino" +p.getDestino()+ "\n"
-                            + "Cuotas: " + p.getCuotas() + "\n"
-                            + "Interés aplicado: " + (p.getInteres() * 100) + "%\n"
-                            + "Total a pagar: $" + String.format("%.2f", p.calcularTotalConInteres()) + "\n"
-                            + "Cuota mensual: $" + String.format("%.2f", p.calcularCuotaMensual());
+            if (p != null) {
+                gestorPrestamos.getSolicitudesPendientes().remove(p);
+                gestorPrestamos.agregarPrestamo(p);
 
-                    txtResumenAprobacion.setText(resumen);
+                String resumen = "✅ Préstamo aprobado\n"
+                        + "Cliente: " + p.getCliente().getNombre() + " " + p.getCliente().getApellido() + "\n"
+                        + "Monto: $" + String.format("%.2f", p.getMonto()) + "\n"
+                        + "Destino: " + p.getDestino() + "\n"
+                        + "Cuotas: " + p.getCuotas() + "\n"
+                        + "Interés aplicado: " + (p.getInteres() * 100) + "%\n"
+                        + "Total a pagar: $" + String.format("%.2f", p.calcularTotalConInteres()) + "\n"
+                        + "Cuota mensual: $" + String.format("%.2f", p.calcularCuotaMensual());
+
+                txtResumenAprobacion.setText(resumen);
+                gestorPrestamos.agregarOperacionAlHistorial("📥 Aprobado préstamo ID " + p.getId()
+                        + " para " + p.getCliente().getNombre() + " por $" + String.format("%.2f", p.getMonto()));
+
+                cargarSolicitudes();
+            } else {
+                txtResumenAprobacion.setText("❌ No se pudo encontrar la solicitud.");
+            }
+        } else {
+            txtResumenAprobacion.setText("⚠️ Selecciona una solicitud para aprobar.");
+        }
+    }
+
+    private void rechazarSolicitud() {
+        int index = listaSolicitudes.getSelectedIndex();
+        if (index >= 0) {
+            String selectedValue = modeloLista.getElementAt(index);
+            int id = extraerIdDesdeTexto(selectedValue);
+
+            Prestamo p = buscarSolicitudPorId(id);
+
+            if (p != null) {
+                String razon = JOptionPane.showInputDialog(this, "Motivo del rechazo:", "Rechazar Solicitud", JOptionPane.PLAIN_MESSAGE);
+                if (razon != null && !razon.trim().isEmpty()) {
+                    gestorPrestamos.getSolicitudesPendientes().removeIf(prestamo -> prestamo.getId() == p.getId());
+                    gestorPrestamos.agregarPrestamoRechazado(p, razon.trim());
+
+                    txtResumenAprobacion.setText("❌ Préstamo rechazado\nMotivo: " + razon);
+
+                    gestorPrestamos.agregarOperacionAlHistorial("🚫 Rechazado préstamo ID " + p.getId()
+                            + " para " + p.getCliente().getNombre() + ". Motivo: " + razon);
+
                     cargarSolicitudes();
                 } else {
-                    txtResumenAprobacion.setText("❌ No se pudo encontrar la solicitud.");
+                    JOptionPane.showMessageDialog(this, "Debes ingresar un motivo para rechazar.", "Advertencia", JOptionPane.WARNING_MESSAGE);
                 }
             } else {
-                txtResumenAprobacion.setText("⚠️ Selecciona una solicitud para aprobar.");
+                txtResumenAprobacion.setText("❌ No se pudo encontrar la solicitud.");
             }
-        });
+        } else {
+            txtResumenAprobacion.setText("⚠️ Selecciona una solicitud para rechazar.");
+        }
     }
 
     private void cargarSolicitudes() {

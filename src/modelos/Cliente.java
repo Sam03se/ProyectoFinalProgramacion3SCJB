@@ -1,5 +1,8 @@
 package modelos;
 
+import gestores.GestorPrestamos;
+import modelos.Prestamo;
+
 public class Cliente {
     private int id;
     private String nombre;
@@ -13,11 +16,12 @@ public class Cliente {
     private String cuentaBancaria; // 🔄 NUEVO
 
     // Constructor completo
-    public Cliente(int id, String nombre, String apellido, String cedula, String correo, int edad, String zona, double ingresoMensual, int antiguedadLaboral) {
+    public Cliente(int id, String nombre, String apellido, String cedula, String correo,
+                   int edad, String zona, double ingresoMensual, int antiguedadLaboral) {
+
         if (id <= 0) throw new IllegalArgumentException("ID debe ser positivo.");
         if (nombre == null || nombre.isEmpty()) throw new IllegalArgumentException("Nombre no puede estar vacío.");
-        if (apellido == null || apellido.isEmpty())
-            throw new IllegalArgumentException("Apellido no puede estar vacío.");
+        if (apellido == null || apellido.isEmpty()) throw new IllegalArgumentException("Apellido no puede estar vacío.");
         if (!correo.contains("@")) throw new IllegalArgumentException("Correo inválido.");
         if (cedula == null || cedula.length() != 10) throw new IllegalArgumentException("Cédula inválida.");
         if (edad < 18 || edad > 100) throw new IllegalArgumentException("Edad no válida.");
@@ -35,49 +39,20 @@ public class Cliente {
         this.zona = zona.toLowerCase();
         this.ingresoMensual = ingresoMensual;
         this.antiguedadLaboral = antiguedadLaboral;
-        this.cuentaBancaria = null; // Inicialmente sin cuenta
+        this.cuentaBancaria = null;
     }
 
     // Getters
-    public int getId() {
-        return id;
-    }
-
-    public String getNombre() {
-        return nombre;
-    }
-
-    public String getApellido() {
-        return apellido;
-    }
-
-    public String getCedula() {
-        return cedula;
-    }
-
-    public String getCorreo() {
-        return correo;
-    }
-
-    public int getEdad() {
-        return edad;
-    }
-
-    public String getZona() {
-        return zona;
-    }
-
-    public double getIngresoMensual() {
-        return ingresoMensual;
-    }
-
-    public int getAntiguedadLaboral() {
-        return antiguedadLaboral;
-    }
-
-    public String getCuentaBancaria() {
-        return cuentaBancaria;
-    }
+    public int getId() { return id; }
+    public String getNombre() { return nombre; }
+    public String getApellido() { return apellido; }
+    public String getCedula() { return cedula; }
+    public String getCorreo() { return correo; }
+    public int getEdad() { return edad; }
+    public String getZona() { return zona; }
+    public double getIngresoMensual() { return ingresoMensual; }
+    public int getAntiguedadLaboral() { return antiguedadLaboral; }
+    public String getCuentaBancaria() { return cuentaBancaria; }
 
     // Setters
     public void setNombre(String nombre) {
@@ -131,4 +106,14 @@ public class Cliente {
     public String toString() {
         return nombre + " " + apellido + " | ID: " + id;
     }
+
+    public boolean puedeSolicitarNuevoPrestamo(GestorPrestamos gestorPrestamos) {
+        for (Prestamo p : gestorPrestamos.prestamosPorCliente(this.getId())) {
+            if (!p.estaPagado()) {
+                return false; // Tiene préstamo activo
+            }
+        }
+        return true; // Todos los préstamos pagados
+    }
+
 }
